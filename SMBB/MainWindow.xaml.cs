@@ -10,15 +10,6 @@ namespace SMBB
 {
     class Utils
     {
-        public static void runCmd(string exePath, string args)
-        {
-            ProcessStartInfo cmd = new ProcessStartInfo(exePath, args);
-            cmd.CreateNoWindow = true;
-            cmd.UseShellExecute = false;
-            Process process = Process.Start(cmd);
-            process.WaitForExit();
-            process.Close();
-        }
         public static byte[] byteArrayCat(params byte[][] src)
         {
             uint length = 0;
@@ -376,6 +367,8 @@ namespace SMBB
         int progress = NO_PROGRESS;
         Regex notIntReg = new Regex(@"[^0-9]");
         string[] needToolFiles = {"DSPADPCM.exe", "dsptool.dll", "hio2.dll", "soundfile.dll", "wdrev.exe" };
+        string toolsPath;
+        string tmpPath;
         Sound srcWav = new Sound();
         byte[] lpFileData = {0x4C, 0x4F, 0x4F, 0x50, 0x3D, 0xDD, 0x96, 0x17, 0, 0, 0, 0, 0, 0, 0, 0};
         bool isLooped = false;
@@ -387,11 +380,13 @@ namespace SMBB
         public MainWindow()
         {
             InitializeComponent();
+            toolsPath = AppDomain.CurrentDomain.BaseDirectory + "tools\\";
+            tmpPath = AppDomain.CurrentDomain.BaseDirectory + "tmp\\";
             bool needToolFilesOK = true;
             string needToolFilesErrMsg = "必要なファイルが不足しています。以下のファイルを\"tools\"フォルダーに入れてください\n";
             for (int i = 0;i < needToolFiles.Length;i++)
             {
-                if (!File.Exists(AppDomain.CurrentDomain.BaseDirectory + "tools\\" + needToolFiles[i]))
+                if (!File.Exists(toolsPath + needToolFiles[i]))
                 {
                     needToolFilesErrMsg += "\n";
                     needToolFilesErrMsg += needToolFiles[i];
@@ -599,8 +594,6 @@ namespace SMBB
 
         private void buildBrstm_Click(object sender, RoutedEventArgs e)
         {
-            string toolsPath = AppDomain.CurrentDomain.BaseDirectory + "tools\\";
-            string tmpPath = AppDomain.CurrentDomain.BaseDirectory + "tmp\\";
             progress = SPILIT_WAV;
             setUI();
             try
@@ -628,56 +621,90 @@ namespace SMBB
                     return;
                 }
             }
-            for(int i = 0; i < srcChannelCount; i++)
+            progress = 1;
+            setUI();
+            if (isLooped)
             {
-                progress = i + 1;
-                setUI();
-                if (isLooped)
+                runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + "0.wav\" \"" + tmpPath + "0.dsp\" -l" + loopStart.ToString() + "-" + loopEnd.ToString());
+            }
+            else
+            {
+                runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + "0.wav\" \"" + tmpPath + "0.dsp\"");
+            }
+        }
+        void runCmd(string exePath, string args)
+        {
+            ProcessStartInfo cmd = new ProcessStartInfo(exePath, args);
+            cmd.CreateNoWindow = true;
+            cmd.UseShellExecute = false;
+            Process process = Process.Start(cmd);
+            process.EnableRaisingEvents = true;
+            process.Exited += new EventHandler(cmdExitHandler);
+        }
+        void cmdExitHandler(object sender, EventArgs e)
+        {
+            Process process = (Process)sender;
+            if (progress == BUILD_BRSTM)
+            {
+                progress = NO_PROGRESS;
+                if (!File.Exists(tmpPath + "output.brstm"))
                 {
-                    Utils.runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + i.ToString() + ".wav\" \"" + tmpPath + i.ToString() + ".dsp\" -l" + loopStart.ToString() + "-" + loopEnd.ToString());
+                    MessageBox.Show("不明なエラーが発生したため、BRSTMを作成できませんでした", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 else
                 {
-                    Utils.runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + i.ToString() + ".wav\" \"" + tmpPath + i.ToString() + ".dsp\"");
+                    try
+                    {
+                        File.Delete(brstmOutPath);
+                        File.Move(tmpPath + "output.brstm", brstmOutPath);
+                        MessageBox.Show("BRSTMは正常に作成されました", "", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch
+                    {
+                        MessageBox.Show("不明なエラーが発生したため、BRSTMを作成できませんでした", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
                 }
-                if (!File.Exists(tmpPath + i.ToString() + ".dsp"))
+            }
+            else
+            {
+                if (!File.Exists(tmpPath + (progress - 1).ToString() + ".dsp"))
                 {
                     MessageBox.Show("\"DSPADPCM.exe\"でエラーが発生しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                     progress = NO_PROGRESS;
-                    setUI();
-                    return;
+                }
+                else
+                {
+                    if(progress == srcChannelCount)
+                    {
+                        progress = BUILD_BRSTM;
+                        string wdrevArgs = "--build \"" + tmpPath + "output.brstm\"";
+                        for (int i = 0; i < destChannelCount; i++)
+                        {
+                            wdrevArgs += " \"";
+                            wdrevArgs += tmpPath;
+                            wdrevArgs += (i % srcChannelCount).ToString();
+                            wdrevArgs += ".dsp\"";
+                        }
+                        runCmd("\"" + toolsPath + "wdrev.exe\"", wdrevArgs);
+                    }
+                    else
+                    {
+                        progress++;
+                        if (isLooped)
+                        {
+                            runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + (progress - 1).ToString() + ".wav\" \"" + tmpPath + (progress - 1).ToString() + ".dsp\" -l" + loopStart.ToString() + "-" + loopEnd.ToString());
+                        }
+                        else
+                        {
+                            runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + (progress - 1).ToString() + ".wav\" \"" + tmpPath + (progress - 1).ToString() + ".dsp\"");
+                        }
+                    }
                 }
             }
-            progress = BUILD_BRSTM;
-            setUI();
-            string wdrevArgs = "--build \"" + tmpPath + "output.brstm\"";
-            for(int i = 0; i < destChannelCount; i++)
+            this.Dispatcher.Invoke((Action)(() =>
             {
-                wdrevArgs += " \"";
-                wdrevArgs += tmpPath;
-                wdrevArgs += (i % srcChannelCount).ToString();
-                wdrevArgs += ".dsp\"";
-            }
-            Utils.runCmd("\"" + toolsPath + "wdrev.exe\"", wdrevArgs);
-            progress = NO_PROGRESS;
-            setUI();
-            if (!File.Exists(tmpPath + "output.brstm"))
-            {
-                MessageBox.Show("\"wdrev.exe\"でエラーが発生しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                 setUI();
-                return;
-            }
-            try
-            {
-                File.Delete(brstmOutPath);
-                File.Move(tmpPath + "output.brstm", brstmOutPath);
-            }
-            catch
-            {
-                MessageBox.Show("不明なエラーが発生したため、BRSTMを作成できませんでした", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
-            MessageBox.Show("BRSTMは正常に作成されました", "", MessageBoxButton.OK, MessageBoxImage.Information);
+            }));
         }
     }
 }
