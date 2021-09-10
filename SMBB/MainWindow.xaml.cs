@@ -27,6 +27,12 @@ namespace SMBB
         {
             Array.Copy(src, srcOffset, dest, destOffset, length);
         }
+        public unsafe static float bytesToFloat(byte[] data, uint offset)
+        {
+            uint tmpInt = bytesToUint(data, offset);
+            float dest = *((float*)&tmpInt);
+            return dest;
+        }
         public static ulong bytesToUlong(byte[] data, uint offset)
         {
             ulong dest = 0;
@@ -134,7 +140,7 @@ namespace SMBB
         public Sound(){}
         public Sound(uint _sampleRate, uint _sampleLength, ushort _channelCount, ushort _format)
         {
-            if (_format != PCM_8 && _format != PCM_16 && _format != PCM_24 && _format != PCM_32 && _format != PCM_64)
+            if (_format != PCM_8 && _format != PCM_16 && _format != PCM_24 && _format != PCM_32 && _format != PCM_64 && _format != PCM_FLOAT)
             {
                 error = ERROR_INVALID_ARGS;
                 return;
@@ -179,6 +185,8 @@ namespace SMBB
                     return 32;
                 case PCM_64:
                     return 64;
+                case PCM_FLOAT:
+                    return 32;
             }
             return 0;
         }
@@ -198,9 +206,9 @@ namespace SMBB
                 if (curElementName == FMT_TAG)
                 {
                     format = Utils.bytesToUshort(src, curElementOffset + 8);
+                    ushort bps = Utils.bytesToUshort(src, curElementOffset + 22);
                     if (format == PCM_16)
                     {
-                        ushort bps = Utils.bytesToUshort(src, curElementOffset + 22);
                         if (bps == 8 || bps == 16 || bps == 24 || bps == 32 || bps == 64)
                         {
                             error = NO_ERROR;
@@ -220,6 +228,9 @@ namespace SMBB
                                     break;
                             }
                         }
+                    }else if (format == PCM_FLOAT)
+                    {
+                        if(bps == 32)error = NO_ERROR;
                     }
                     channelCount = Utils.bytesToUshort(src, curElementOffset + 10);
                     sampleRate = Utils.bytesToUint(src, curElementOffset + 12);
@@ -228,7 +239,7 @@ namespace SMBB
                 {
                     data = new byte[curElementSize];
                     Utils.memcpy(data, 0, src, curElementOffset + 8, curElementSize);
-                    if (format == PCM_8 || format == PCM_16 || format == PCM_24 || format == PCM_32 || format == PCM_64)
+                    if (format == PCM_8 || format == PCM_16 || format == PCM_24 || format == PCM_32 || format == PCM_64 || format == PCM_FLOAT)
                     {
                         uint bps = getBps() / 8;
                         bps *= channelCount;
@@ -245,7 +256,7 @@ namespace SMBB
             for (uint i = 0; i < channelCount; i++)
             {
                 dest[i] = new Sound(sampleRate, sampleLength, 1, format);
-                if (format == PCM_8 || format == PCM_16 || format == PCM_24 || format == PCM_32 || format == PCM_64)
+                if (format == PCM_8 || format == PCM_16 || format == PCM_24 || format == PCM_32 || format == PCM_64 || format == PCM_FLOAT)
                 {
                     uint bytePerSample = getBps() / 8;
                     for (uint j = 0; j < sampleLength; j++)
@@ -296,13 +307,24 @@ namespace SMBB
                     Utils.ushortToBytes(destData, 2 * i, (ushort)pcm);
                 }
             }
-            else
+            else if(format == PCM_64)
             {
                 ulong pcm;
                 for (uint i = 0; i < (data.Length / 8); i++)
                 {
                     pcm = Utils.bytesToUlong(data, 8 * i);
                     pcm >>= 48;
+                    Utils.ushortToBytes(destData, 2 * i, (ushort)pcm);
+                }
+            }
+            else
+            {
+                float pcmFloat;
+                short pcm;
+                for (uint i = 0; i < (data.Length / 4); i++)
+                {
+                    pcmFloat = Utils.bytesToFloat(data, 4 * i);
+                    pcm = (short)((32767 * pcmFloat) + 0.5);
                     Utils.ushortToBytes(destData, 2 * i, (ushort)pcm);
                 }
             }
@@ -327,14 +349,15 @@ namespace SMBB
             Utils.stringToBytes(dataElement, 0, 4, DATA_TAG);
             Utils.uintToBytes(dataElement, 4, (uint)data.Length);
             Utils.memcpy(dataElement, 8, data, 0, (uint)data.Length);
-            if (format == PCM_8 || format == PCM_16 || format == PCM_24 || format == PCM_32 || format == PCM_64)
+            if (format == PCM_8 || format == PCM_16 || format == PCM_24 || format == PCM_32 || format == PCM_64 || format == PCM_FLOAT)
             {
                 ushort blockSize = (ushort)(getBps() / 8);
                 blockSize *= channelCount;
                 fmtElement = new byte[24];
                 Utils.stringToBytes(fmtElement, 0, 4, FMT_TAG);
                 Utils.uintToBytes(fmtElement, 4, 16);
-                Utils.ushortToBytes(fmtElement, 8, 1);
+                Utils.ushortToBytes(fmtElement, 8, PCM_16);
+                if(format == PCM_FLOAT) Utils.ushortToBytes(fmtElement, 8, PCM_FLOAT);
                 Utils.ushortToBytes(fmtElement, 0xA, channelCount);
                 Utils.uintToBytes(fmtElement, 0xC, sampleRate);
                 Utils.uintToBytes(fmtElement, 0x10, blockSize * sampleRate);
