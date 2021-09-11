@@ -193,18 +193,23 @@ namespace SMBB
         void readSoundFromBytes(byte[] src)
         {
             error = ERROR_INVALID_FILE;
+            if (src.Length < 0x14) return;
             if (Utils.bytesToString(src, 0, 4) != RIFF_TAG) return;
             if (Utils.bytesToString(src, 8, 4) != WAVE_TAG) return;
             uint curElementOffset = 0xC;
+            uint nextElementOffset;
             while (true)
             {
                 string curElementName;
                 uint curElementSize;
-                if (curElementOffset >= src.Length) break;
-                curElementName = Utils.bytesToString(src, curElementOffset, 4);
+                if (curElementOffset + 8 > src.Length) break;
                 curElementSize = Utils.bytesToUint(src, curElementOffset + 4);
+                nextElementOffset = curElementOffset + curElementSize + 8;
+                if (nextElementOffset > src.Length) break;
+                curElementName = Utils.bytesToString(src, curElementOffset, 4);
                 if (curElementName == FMT_TAG)
                 {
+                    if (curElementSize < 0x10) return;
                     format = Utils.bytesToUshort(src, curElementOffset + 8);
                     ushort bps = Utils.bytesToUshort(src, curElementOffset + 22);
                     if (format == PCM_16)
@@ -246,7 +251,7 @@ namespace SMBB
                         sampleLength = curElementSize / bps;
                     }
                 }
-                curElementOffset += (curElementSize + 8);
+                curElementOffset = nextElementOffset;
             }
             if (data == null) error = ERROR_INVALID_FILE;
         }
