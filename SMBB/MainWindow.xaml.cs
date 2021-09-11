@@ -5,6 +5,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
+using NAudio.Wave;
 
 namespace SMBB
 {
@@ -192,6 +193,20 @@ namespace SMBB
         }
         void readSoundFromBytes(byte[] src)
         {
+            readWavFromBytes(src);
+            if (error == NO_ERROR) return;
+            try
+            {
+                readMp3FromBytes(src);
+            }
+            catch
+            {
+                return;
+            }
+            error = NO_ERROR;
+        }
+        void readWavFromBytes(byte[] src)
+        {
             error = ERROR_INVALID_FILE;
             if (src.Length < 0x14) return;
             if (Utils.bytesToString(src, 0, 4) != RIFF_TAG) return;
@@ -254,6 +269,25 @@ namespace SMBB
                 curElementOffset = nextElementOffset;
             }
             if (data == null) error = ERROR_INVALID_FILE;
+        }
+        void readMp3FromBytes(byte[] src)
+        {
+            using (Stream stream = new MemoryStream())
+            {
+                stream.Write(src, 0, src.Length);
+
+                stream.Position = 0;
+
+                using (WaveStream pcm = new Mp3FileReader(stream))
+                {
+                    data = new byte[Convert.ToInt32(pcm.Length)];
+                    pcm.Read(data, 0, Convert.ToInt32(pcm.Length));
+                    channelCount = (ushort)pcm.WaveFormat.Channels;
+                    sampleRate = (uint)pcm.WaveFormat.SampleRate;
+                }
+            }
+            sampleLength = (uint)(data.Length / (channelCount * 2));
+            format = PCM_16;
         }
         public Sound[] spilitChannel()
         {
@@ -437,7 +471,7 @@ namespace SMBB
             {
                 if (loopStart > loopEnd) sampleWarnText.Text = "警告:ループ開始がループ終了よりも後になっています";
                 if (loopStart == loopEnd) sampleWarnText.Text = "警告:ループ開始とループ終了が同じになっています";
-                if (srcWav.error == Sound.NO_ERROR && loopEnd > srcWav.sampleLength) sampleWarnText.Text = "警告:ループ終了がWAVファイル(" + srcWav.sampleLength.ToString() + "サンプル)より長いです";
+                if (srcWav.error == Sound.NO_ERROR && loopEnd > srcWav.sampleLength) sampleWarnText.Text = "警告:ループ終了が音声ファイル(" + srcWav.sampleLength.ToString() + "サンプル)より長いです";
                 loopStartText.IsEnabled = true;
                 loopEndText.IsEnabled = true;
                 lpLoadButton.IsEnabled = true;
@@ -488,7 +522,7 @@ namespace SMBB
         private void wavButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog();
-            dialog.Filter = "WAVファイル (*.wav;*.wave)|*.wav;*.wave|すべてのファイル (*.*)|*.*";
+            dialog.Filter = "音声ファイル (*.wav;*.wave;*.mp3)|*.wav;*.wave;*.mp3|すべてのファイル(*.*)|*.*";
             if(dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
@@ -502,7 +536,7 @@ namespace SMBB
                 }
                 else
                 {
-                    MessageBox.Show("無効なWAVファイル、もしくはサポートされていないフォーマットです", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("無効な音声ファイル、もしくはサポートされていないフォーマットです", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -643,7 +677,7 @@ namespace SMBB
                 srcWavs[i].toPCM16();
                 if (!srcWavs[i].saveAsWaveFile(tmpPath + i.ToString() + ".wav"))
                 {
-                    MessageBox.Show("WAVファイル分割中にエラーが発生しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("音声ファイル分割中にエラーが発生しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                     progress = NO_PROGRESS;
                     setUI();
                     return;
