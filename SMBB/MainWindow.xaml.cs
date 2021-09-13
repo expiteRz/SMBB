@@ -434,6 +434,7 @@ namespace SMBB
         Sound srcWav = new Sound();
         byte[] lpFileData = {0x4C, 0x4F, 0x4F, 0x50, 0x3D, 0xDD, 0x96, 0x17, 0, 0, 0, 0, 0, 0, 0, 0};
         bool isLooped = false;
+        bool finalLap = false;
         uint loopStart = 0;
         uint loopEnd = 0;
         uint srcChannelCount;
@@ -492,6 +493,7 @@ namespace SMBB
                 wavButton.IsEnabled = true;
                 brstmButton.IsEnabled = true;
                 channelCountSelect.IsEnabled = true;
+                finalLapCheckBox.IsEnabled = true;
                 loopCheckBox.IsEnabled = true;
                 if (brstmOutPath != "" && srcWav.error == Sound.NO_ERROR) buildBrstm.IsEnabled = true;
             }
@@ -512,6 +514,7 @@ namespace SMBB
                 wavButton.IsEnabled = false;
                 brstmButton.IsEnabled = false;
                 channelCountSelect.IsEnabled = false;
+                finalLapCheckBox.IsEnabled = false;
                 loopCheckBox.IsEnabled = false;
                 loopStartText.IsEnabled = false;
                 loopEndText.IsEnabled = false;
@@ -675,6 +678,12 @@ namespace SMBB
             for(int i = 0;i < srcChannelCount; i++)
             {
                 srcWavs[i].toPCM16();
+                if (finalLap)
+                {
+                    double tmpSampleRate = srcWavs[i].sampleRate * 1.0681;
+                    tmpSampleRate += 0.5;
+                    srcWavs[i].sampleRate = (uint)tmpSampleRate;
+                }
                 if (!srcWavs[i].saveAsWaveFile(tmpPath + i.ToString() + ".wav"))
                 {
                     MessageBox.Show("音声ファイル分割中にエラーが発生しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -767,6 +776,11 @@ namespace SMBB
             {
                 setUI();
             }));
+        }
+
+        private void finalLapCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            finalLap = (bool)finalLapCheckBox.IsChecked;
         }
     }
 }
