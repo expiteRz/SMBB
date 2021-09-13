@@ -1,5 +1,5 @@
 # Simple Multi Brstm Builder
-![SnapShot](https://cdn.discordapp.com/attachments/866343429223088198/885763792552726538/SMBB-v0.1.png)
+![SnapShot](https://cdn.discordapp.com/attachments/866343429223088198/886936663379554344/SMBB-v0.4.png)
 
 WAV,MP3ファイルからマルチBRSTMを生成します。WAVファイルは無圧縮の8bit, 16bit, 24bit, 32bitのPCM音源のみ対応しています。チャンネル数はいくつでも大丈夫です。
 

@@ -663,6 +663,14 @@ namespace SMBB
             setUI();
             try
             {
+                Directory.Delete(tmpPath, true);
+            }
+            catch
+            {
+
+            }
+            try
+            {
                 Directory.CreateDirectory(tmpPath);
             }
             catch
@@ -717,6 +725,14 @@ namespace SMBB
             Process process = (Process)sender;
             if (progress == BUILD_BRSTM)
             {
+                try
+                {
+                    for(uint i = 0;i < srcChannelCount;i++) File.Delete(AppDomain.CurrentDomain.BaseDirectory + i.ToString() + ".txt");
+                }
+                catch
+                {
+
+                }
                 progress = NO_PROGRESS;
                 if (!File.Exists(tmpPath + "output.brstm"))
                 {
