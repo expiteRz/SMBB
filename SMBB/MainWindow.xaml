@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SMBB"
         mc:Ignorable="d"
-        Title="Simple Multi Brstm Builder v0.4" Height="470" Width="400" ResizeMode="CanMinimize">
+        Title="Simple Multi Brstm Builder v0.5" Height="470" Width="400" ResizeMode="CanMinimize">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>

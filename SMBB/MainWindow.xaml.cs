@@ -437,6 +437,8 @@ namespace SMBB
         bool finalLap = false;
         uint loopStart = 0;
         uint loopEnd = 0;
+        uint realLoopStart;
+        uint realLoopEnd;
         uint srcChannelCount;
         uint destChannelCount = 2;
         string brstmOutPath = "";
@@ -661,6 +663,32 @@ namespace SMBB
         {
             progress = SPILIT_WAV;
             setUI();
+            uint realSampleRate;
+            if (finalLap)
+            {
+                double tmpSampleRate = srcWav.sampleRate * 1.0681;
+                tmpSampleRate += 0.5;
+                realSampleRate = (uint)tmpSampleRate;
+            }
+            else
+            {
+                realSampleRate = srcWav.sampleRate;
+            }
+            uint loopAutoShift = 14336 - (loopStart % 14336);
+            realLoopStart = loopStart + loopAutoShift;
+            realLoopEnd = loopEnd + loopAutoShift;
+            if (realLoopEnd > srcWav.sampleLength)
+            {
+                var result = MessageBox.Show("ループ設定を自動調整した結果、ループ終了が音声ファイルより長くなったため、ループ設定を自動調整できませんでした。自動調整せずにBRSTMを作成してもよろしいですか？(実機で再生したときにループがずれる可能性があります)", "", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                if (result == MessageBoxResult.No)
+                {
+                    progress = NO_PROGRESS;
+                    setUI();
+                    return;
+                }
+                realLoopStart = loopStart;
+                realLoopEnd = loopEnd;
+            }
             try
             {
                 Directory.Delete(tmpPath, true);
@@ -686,12 +714,7 @@ namespace SMBB
             for(int i = 0;i < srcChannelCount; i++)
             {
                 srcWavs[i].toPCM16();
-                if (finalLap)
-                {
-                    double tmpSampleRate = srcWavs[i].sampleRate * 1.0681;
-                    tmpSampleRate += 0.5;
-                    srcWavs[i].sampleRate = (uint)tmpSampleRate;
-                }
+                srcWavs[i].sampleRate = realSampleRate;
                 if (!srcWavs[i].saveAsWaveFile(tmpPath + i.ToString() + ".wav"))
                 {
                     MessageBox.Show("音声ファイル分割中にエラーが発生しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -704,7 +727,7 @@ namespace SMBB
             setUI();
             if (isLooped)
             {
-                runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + "0.wav\" \"" + tmpPath + "0.dsp\" -l" + loopStart.ToString() + "-" + loopEnd.ToString());
+                runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + "0.wav\" \"" + tmpPath + "0.dsp\" -l" + realLoopStart.ToString() + "-" + realLoopEnd.ToString());
             }
             else
             {
@@ -779,7 +802,7 @@ namespace SMBB
                         progress++;
                         if (isLooped)
                         {
-                            runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + (progress - 1).ToString() + ".wav\" \"" + tmpPath + (progress - 1).ToString() + ".dsp\" -l" + loopStart.ToString() + "-" + loopEnd.ToString());
+                            runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + (progress - 1).ToString() + ".wav\" \"" + tmpPath + (progress - 1).ToString() + ".dsp\" -l" + realLoopStart.ToString() + "-" + realLoopEnd.ToString());
                         }
                         else
                         {
