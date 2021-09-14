@@ -301,7 +301,6 @@ namespace SMBB
             format = PCM_16;
         }
 
-        [SuppressMessage("ReSharper.DPA", "DPA0003: Excessive memory allocations in LOH", MessageId = "type: System.Byte[]")]
         byte[] ReadAacFromFile(string path)
         {
             try
@@ -583,7 +582,7 @@ namespace SMBB
         private void wavButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog();
-            dialog.Filter = "音声ファイル (*.wav;*.wave;*.mp3)|*.wav;*.wave;*.mp3|すべてのファイル(*.*)|*.*";
+            dialog.Filter = "音声ファイル (*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.acc)|*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.acc|すべてのファイル(*.*)|*.*";
             if(dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
