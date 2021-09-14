@@ -1,11 +1,17 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using NAudio.MediaFoundation;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 namespace SMBB
 {
@@ -157,9 +163,14 @@ namespace SMBB
         public Sound(string path)
         {
             byte[] src;
+            
             try
             {
-                src = File.ReadAllBytes(path);
+                if (path.Contains(".mp4") || path.Contains(".m4a") || path.Contains(".aac"))
+                {
+                    src = ReadAacFromFile(path);
+                }
+                else src = File.ReadAllBytes(path);
             }
             catch
             {
@@ -289,6 +300,53 @@ namespace SMBB
             sampleLength = (uint)(data.Length / (channelCount * 2));
             format = PCM_16;
         }
+
+        [SuppressMessage("ReSharper.DPA", "DPA0003: Excessive memory allocations in LOH", MessageId = "type: System.Byte[]")]
+        byte[] ReadAacFromFile(string path)
+        {
+            try
+            {
+                using (var reader = new MediaFoundationReader(path))
+                {
+                    using (var resampler = new ResamplerDmoStream(reader, new WaveFormat(reader.WaveFormat.SampleRate,
+                        reader.WaveFormat.BitsPerSample, reader.WaveFormat.Channels)))
+                    {
+                        using (var ms = new MemoryStream())
+                        using (var waveWriter = new WaveFileWriter(ms, resampler.WaveFormat))
+                        {
+                            resampler.CopyTo(waveWriter);
+                            
+                            var currentPos = ms.Position;
+                            try
+                            {
+                                ms.Position = 0x4;
+                                uint i = (uint) waveWriter.Length + 0x26;
+                                var bytes = BitConverter.GetBytes(i);
+                                var writer = new BinaryWriter(ms);
+                                writer.Write(bytes);
+
+                                ms.Position = 0x2b;
+                                var j = bytes.Skip(1).ToArray();
+                                writer = new BinaryWriter(ms);
+                                writer.Write(j);
+                            }
+                            finally
+                            {
+                                ms.Position = currentPos;
+                            }
+                            
+                            return ms.ToArray();
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message);
+                throw;
+            }
+        }
+        
         public Sound[] spilitChannel()
         {
             Sound[] dest = new Sound[channelCount];
