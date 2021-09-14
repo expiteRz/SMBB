@@ -584,7 +584,7 @@ namespace SMBB
         private void wavButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog();
-            dialog.Filter = "音声ファイル (*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.acc)|*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.acc|すべてのファイル(*.*)|*.*";
+            dialog.Filter = "音声ファイル (*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac)|*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac|すべてのファイル(*.*)|*.*";
             if(dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
