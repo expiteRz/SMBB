@@ -731,10 +731,11 @@ namespace SMBB
             {
                 realSampleRate = srcWav.sampleRate;
             }
-            uint loopAutoShift = 14336 - (loopStart % 14336);
+            uint loopAutoShift = loopStart % 14336;
+            if(loopAutoShift != 0)loopAutoShift = 14336 - loopAutoShift;
             realLoopStart = loopStart + loopAutoShift;
             realLoopEnd = loopEnd + loopAutoShift;
-            if (realLoopEnd > srcWav.sampleLength)
+            if (realLoopEnd > srcWav.sampleLength && isLooped)
             {
                 var result = MessageBox.Show("ループ設定を自動調整した結果、ループ終了が音声ファイルより長くなったため、ループ設定を自動調整できませんでした。自動調整せずにBRSTMを作成してもよろしいですか？(実機で再生したときにループがずれる可能性があります)", "", MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result == MessageBoxResult.No)
