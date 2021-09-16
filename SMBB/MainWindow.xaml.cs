@@ -686,7 +686,7 @@ namespace SMBB
 
         private void loopCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            isLooped = (bool)loopCheckBox.IsChecked;
+            if (loopCheckBox.IsChecked != null) isLooped = (bool) loopCheckBox.IsChecked;
             setUI();
         }
 
@@ -818,8 +818,11 @@ namespace SMBB
                 UseShellExecute = false
             };
             Process process = Process.Start(cmd);
-            process.EnableRaisingEvents = true;
-            process.Exited += cmdExitHandler;
+            if (process != null)
+            {
+                process.EnableRaisingEvents = true;
+                process.Exited += cmdExitHandler;
+            }
         }
         void cmdExitHandler(object sender, EventArgs e)
         {
@@ -892,15 +895,12 @@ namespace SMBB
                     }
                 }
             }
-            Dispatcher.Invoke(() =>
-            {
-                setUI();
-            });
+            Dispatcher.Invoke(setUI);
         }
 
         private void finalLapCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            finalLap = (bool)finalLapCheckBox.IsChecked;
+            if (finalLapCheckBox.IsChecked != null) finalLap = (bool) finalLapCheckBox.IsChecked;
         }
     }
 }
