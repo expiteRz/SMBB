@@ -700,7 +700,8 @@ namespace SMBB
             }
             catch
             {
-
+                MessageBox.Show("Failed to get loop start point", Properties.Resources.ErrorCapacity,
+                    MessageBoxButton.OK);
             }
             setUI();
         }
@@ -720,7 +721,8 @@ namespace SMBB
             }
             catch
             {
-
+                MessageBox.Show("Failed to get loop end point", Properties.Resources.ErrorCapacity,
+                    MessageBoxButton.OK);
             }
             setUI();
         }
@@ -769,7 +771,8 @@ namespace SMBB
             }
             catch
             {
-
+                MessageBox.Show("Failed to removed temporary folder", Properties.Resources.ErrorCapacity,
+                    MessageBoxButton.OK);
             }
             try
             {
@@ -829,15 +832,18 @@ namespace SMBB
             Process process = (Process)sender;
             if (progress == BUILD_BRSTM)
             {
+                // Remove generated txt files after built BRSTM
                 try
                 {
                     for(uint i = 0;i < srcChannelCount;i++) File.Delete(AppDomain.CurrentDomain.BaseDirectory + i + ".txt");
                 }
                 catch
                 {
-
+                    MessageBox.Show("Failed to remove auto-generated txt files", "Error", MessageBoxButton.OK);
                 }
+                // Set progress status to No Progress after the former processing has been done
                 progress = NO_PROGRESS;
+                // If brstm file is not exists, display dialog
                 if (!File.Exists(tmpPath + "output.brstm"))
                 {
                     MessageBox.Show(Properties.Resources.FailedBrstmBuildAlert, Properties.Resources.ErrorCapacity,
