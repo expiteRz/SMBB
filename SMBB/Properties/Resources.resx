@@ -114,4 +114,100 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ImportAudioLabel" xml:space="preserve">
+    <value>Audio file to build BRSTM:</value>
+  </data>
+  <data name="DestinationLabel" xml:space="preserve">
+    <value>Destination:</value>
+  </data>
+  <data name="ChannelLabel" xml:space="preserve">
+    <value>Channels:</value>
+  </data>
+  <data name="FinalLapBuildLabel" xml:space="preserve">
+    <value>Build as Final Lap Stream</value>
+  </data>
+  <data name="LoopSettingAreaLabel" xml:space="preserve">
+    <value>Loop Settings</value>
+  </data>
+  <data name="LoopToggleLabel" xml:space="preserve">
+    <value>Loop</value>
+  </data>
+  <data name="LoopStartValueLabel" xml:space="preserve">
+    <value>Loop Start Sample:</value>
+  </data>
+  <data name="LoopEndValueLabel" xml:space="preserve">
+    <value>Loop End Sample:</value>
+  </data>
+  <data name="LoadLoopSettingLabel" xml:space="preserve">
+    <value>Load Setting</value>
+  </data>
+  <data name="SaveLoopSettingLabel" xml:space="preserve">
+    <value>Save Setting</value>
+  </data>
+  <data name="BuildStartLabel" xml:space="preserve">
+    <value>Build</value>
+  </data>
+  <data name="NonToolsAlert" xml:space="preserve">
+    <value>Needed files not found. Make sure 'tools' folder contains files as following:\n</value>
+  </data>
+  <data name="ErrorCapacity" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="LoopStartAfterEndWarning" xml:space="preserve">
+    <value>Warning: Loop Start is set later than Loop End</value>
+  </data>
+  <data name="LoopValuesSameWarning" xml:space="preserve">
+    <value>Warning: Loop Values are set at same position</value>
+  </data>
+  <data name="LoopEndOverSourceWarning" xml:space="preserve">
+    <value>Warning: Loop End Sample is larger than source</value>
+  </data>
+  <data name="SampleUnit" xml:space="preserve">
+    <value>samples</value>
+  </data>
+  <data name="ProgressWaveSplit" xml:space="preserve">
+    <value>Splitting audio file</value>
+  </data>
+  <data name="ProgressBrstmBuild" xml:space="preserve">
+    <value>Building BRSTM</value>
+  </data>
+  <data name="ProgressDspadpcmEncode" xml:space="preserve">
+    <value>Encoding DSPADPCM</value>
+  </data>
+  <data name="FiletypeSpecifiedInput" xml:space="preserve">
+    <value>All supported files</value>
+  </data>
+  <data name="UnableReadAudioAlert" xml:space="preserve">
+    <value>Could not read the file due to invalid or unsupported format</value>
+  </data>
+  <data name="FiletypeSpecifiedOutput" xml:space="preserve">
+    <value>BRSTM File</value>
+  </data>
+  <data name="FiletypeLoopSetting" xml:space="preserve">
+    <value>Loop Setting File</value>
+  </data>
+  <data name="UnableOpenFileAlert" xml:space="preserve">
+    <value>Unable to open file due to error occurring</value>
+  </data>
+  <data name="InvalidFileAlert" xml:space="preserve">
+    <value>Unable to open file because it's invalid</value>
+  </data>
+  <data name="UnableSaveFileAlert" xml:space="preserve">
+    <value>Unable to save file due to error occurring</value>
+  </data>
+  <data name="LoopEndFixCaution" xml:space="preserve">
+    <value>Unable to fix loop end point automatically. Due to trying to fix loop end point, the value of Loop End Sample has set later than source. Would you like to create BRSTM without loop end point auto-fix?</value>
+  </data>
+  <data name="TempFolderFailedAlert" xml:space="preserve">
+    <value>Failed to create tmp folder</value>
+  </data>
+  <data name="FailedAudioSplitAlert" xml:space="preserve">
+    <value>An error has occurred while spliting audio file</value>
+  </data>
+  <data name="FailedBrstmBuildAlert" xml:space="preserve">
+    <value>An error has occurred while building BRSTM</value>
+  </data>
+  <data name="FailedDspadpcmProcessAlert" xml:space="preserve">
+    <value>An error has occurred in DSPADPCM process</value>
+  </data>
 </root>

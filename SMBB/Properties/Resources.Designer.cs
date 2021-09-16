@@ -3,67 +3,348 @@
 //     このコードはツールによって生成されました。
 //     ランタイム バージョン:4.0.30319.42000
 //
-//     このファイルへの変更は、正しくない動作の原因になったり、
-//     コードが再生成されるときに失われたりします。
+//     このファイルへの変更は、以下の状況下で不正な動作の原因になったり、
+//     コードが再生成されるときに損失したりします。
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-
-namespace SMBB.Properties
-{
+namespace SMBB.Properties {
+    using System;
+    
+    
     /// <summary>
     ///   ローカライズされた文字列などを検索するための、厳密に型指定されたリソース クラスです。
     /// </summary>
-    // このクラスは StronglyTypedResourceBuilder クラスによって ResGen
+    // このクラスは StronglyTypedResourceBuilder クラスが ResGen
     // または Visual Studio のようなツールを使用して自動生成されました。
     // メンバーを追加または削除するには、.ResX ファイルを編集して、/str オプションと共に
-    // ResGen を実行し直すか、または VS プロジェクトをリビルドします。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    // ResGen を実行し直すか、または VS プロジェクトをビルドし直します。
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources
-    {
-
+    public class Resources {
+        
         private static global::System.Resources.ResourceManager resourceMan;
-
+        
         private static global::System.Globalization.CultureInfo resourceCulture;
-
+        
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources()
-        {
+        internal Resources() {
         }
-
+        
         /// <summary>
-        ///   このクラスで使用されるキャッシュされた ResourceManager インスタンスを返します。
+        ///   このクラスで使用されているキャッシュされた ResourceManager インスタンスを返します。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager
-        {
-            get
-            {
-                if ((resourceMan == null))
-                {
+        public static global::System.Resources.ResourceManager ResourceManager {
+            get {
+                if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("SMBB.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-
+        
         /// <summary>
         ///   すべてについて、現在のスレッドの CurrentUICulture プロパティをオーバーライドします
         ///   現在のスレッドの CurrentUICulture プロパティをオーバーライドします。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture
-        {
-            get
-            {
+        public static global::System.Globalization.CultureInfo Culture {
+            get {
                 return resourceCulture;
             }
-            set
-            {
+            set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Build に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string BuildStartLabel {
+            get {
+                return ResourceManager.GetString("BuildStartLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Channels: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChannelLabel {
+            get {
+                return ResourceManager.GetString("ChannelLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Destination: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string DestinationLabel {
+            get {
+                return ResourceManager.GetString("DestinationLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Error に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ErrorCapacity {
+            get {
+                return ResourceManager.GetString("ErrorCapacity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   An error has occurred while spliting audio file に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FailedAudioSplitAlert {
+            get {
+                return ResourceManager.GetString("FailedAudioSplitAlert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   An error has occurred while building BRSTM に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FailedBrstmBuildAlert {
+            get {
+                return ResourceManager.GetString("FailedBrstmBuildAlert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   An error has occurred in DSPADPCM process に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FailedDspadpcmProcessAlert {
+            get {
+                return ResourceManager.GetString("FailedDspadpcmProcessAlert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Loop Setting File に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FiletypeLoopSetting {
+            get {
+                return ResourceManager.GetString("FiletypeLoopSetting", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   All supported files に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FiletypeSpecifiedInput {
+            get {
+                return ResourceManager.GetString("FiletypeSpecifiedInput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   BRSTM File に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FiletypeSpecifiedOutput {
+            get {
+                return ResourceManager.GetString("FiletypeSpecifiedOutput", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Build as Final Lap Stream に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FinalLapBuildLabel {
+            get {
+                return ResourceManager.GetString("FinalLapBuildLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Audio file to build BRSTM: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ImportAudioLabel {
+            get {
+                return ResourceManager.GetString("ImportAudioLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Unable to open file because it&apos;s invalid に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string InvalidFileAlert {
+            get {
+                return ResourceManager.GetString("InvalidFileAlert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Load Setting に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LoadLoopSettingLabel {
+            get {
+                return ResourceManager.GetString("LoadLoopSettingLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Unable to fix loop end point automatically. Due to trying to fix loop end point, the value of Loop End Sample has set later than source. Would you like to create BRSTM without loop end point auto-fix? に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LoopEndFixCaution {
+            get {
+                return ResourceManager.GetString("LoopEndFixCaution", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Warning: Loop End Sample is larger than source に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LoopEndOverSourceWarning {
+            get {
+                return ResourceManager.GetString("LoopEndOverSourceWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Loop End Sample: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LoopEndValueLabel {
+            get {
+                return ResourceManager.GetString("LoopEndValueLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Loop Settings に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LoopSettingAreaLabel {
+            get {
+                return ResourceManager.GetString("LoopSettingAreaLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Warning: Loop Start is set later than Loop End に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LoopStartAfterEndWarning {
+            get {
+                return ResourceManager.GetString("LoopStartAfterEndWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Loop Start Sample: に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LoopStartValueLabel {
+            get {
+                return ResourceManager.GetString("LoopStartValueLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Loop に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LoopToggleLabel {
+            get {
+                return ResourceManager.GetString("LoopToggleLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Warning: Loop Values are set at same position に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LoopValuesSameWarning {
+            get {
+                return ResourceManager.GetString("LoopValuesSameWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Needed files not found. Make sure &apos;tools&apos; folder contains files as following:\n に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NonToolsAlert {
+            get {
+                return ResourceManager.GetString("NonToolsAlert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Building BRSTM に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProgressBrstmBuild {
+            get {
+                return ResourceManager.GetString("ProgressBrstmBuild", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Encoding DSPADPCM に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProgressDspadpcmEncode {
+            get {
+                return ResourceManager.GetString("ProgressDspadpcmEncode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Splitting audio file に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ProgressWaveSplit {
+            get {
+                return ResourceManager.GetString("ProgressWaveSplit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   samples に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SampleUnit {
+            get {
+                return ResourceManager.GetString("SampleUnit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Save Setting に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SaveLoopSettingLabel {
+            get {
+                return ResourceManager.GetString("SaveLoopSettingLabel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Failed to create tmp folder に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string TempFolderFailedAlert {
+            get {
+                return ResourceManager.GetString("TempFolderFailedAlert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Unable to open file due to error occurring に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UnableOpenFileAlert {
+            get {
+                return ResourceManager.GetString("UnableOpenFileAlert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Could not read the file due to invalid or unsupported format に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UnableReadAudioAlert {
+            get {
+                return ResourceManager.GetString("UnableReadAudioAlert", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Unable to save file due to error occurring に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UnableSaveFileAlert {
+            get {
+                return ResourceManager.GetString("UnableSaveFileAlert", resourceCulture);
             }
         }
     }

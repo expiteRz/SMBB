@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true"></xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>1.3</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ImportAudioLabel" xml:space="preserve">
+    <value>変換する音声ファイル:</value>
+  </data>
+  <data name="DestinationLabel" xml:space="preserve">
+    <value>BRSTM保存先:</value>
+  </data>
+  <data name="ChannelLabel" xml:space="preserve">
+    <value>チャンネル数:</value>
+  </data>
+  <data name="FinalLapBuildLabel" xml:space="preserve">
+    <value>ファイナルラップ用BRSTM</value>
+  </data>
+  <data name="LoopSettingAreaLabel" xml:space="preserve">
+    <value>ループ設定</value>
+  </data>
+  <data name="LoopToggleLabel" xml:space="preserve">
+    <value>ループさせる</value>
+  </data>
+  <data name="LoopStartValueLabel" xml:space="preserve">
+    <value>ループ開始(サンプル数):</value>
+  </data>
+  <data name="LoopEndValueLabel" xml:space="preserve">
+    <value>ループ終了(サンプル数):</value>
+  </data>
+  <data name="LoadLoopSettingLabel" xml:space="preserve">
+    <value>ループ設定読み込み</value>
+  </data>
+  <data name="SaveLoopSettingLabel" xml:space="preserve">
+    <value>ループ設定保存</value>
+  </data>
+  <data name="BuildStartLabel" xml:space="preserve">
+    <value>BRSTM作成</value>
+  </data>
+  <data name="NonToolsAlert" xml:space="preserve">
+    <value>必要なファイルが不足しています。以下のファイルを"tools"フォルダーに入れてください\n</value>
+  </data>
+  <data name="ErrorCapacity" xml:space="preserve">
+    <value>エラー</value>
+  </data>
+  <data name="LoopStartAfterEndWarning" xml:space="preserve">
+    <value>警告:ループ開始がループ終了よりも後になっています</value>
+  </data>
+  <data name="LoopValuesSameWarning" xml:space="preserve">
+    <value>警告:ループ開始とループ終了が同じになっています</value>
+  </data>
+  <data name="LoopEndOverSourceWarning" xml:space="preserve">
+    <value>警告:ループ終了が音声ファイルより長いです</value>
+  </data>
+  <data name="SampleUnit" xml:space="preserve">
+    <value>サンプル</value>
+  </data>
+  <data name="ProgressWaveSplit" xml:space="preserve">
+    <value>音声ファイル分割中</value>
+  </data>
+  <data name="ProgressBrstmBuild" xml:space="preserve">
+    <value>BRSTM作成中</value>
+  </data>
+  <data name="ProgressDspadpcmEncode" xml:space="preserve">
+    <value>DSPADPCMエンコード中</value>
+  </data>
+  <data name="FiletypeSpecifiedInput" xml:space="preserve">
+    <value>音声ファイル</value>
+  </data>
+  <data name="UnableReadAudioAlert" xml:space="preserve">
+    <value>無効な音声ファイル、もしくはサポートされていないフォーマットです</value>
+  </data>
+  <data name="FiletypeSpecifiedOutput" xml:space="preserve">
+    <value>BRSTMファイル</value>
+  </data>
+  <data name="FiletypeLoopSetting" xml:space="preserve">
+    <value>ループ設定ファイル</value>
+  </data>
+  <data name="UnableOpenFileAlert" xml:space="preserve">
+    <value>エラーが発生したためファイルを開けませんでした</value>
+  </data>
+  <data name="InvalidFileAlert" xml:space="preserve">
+    <value>無効なファイルです</value>
+  </data>
+  <data name="UnableSaveFileAlert" xml:space="preserve">
+    <value>エラーが発生したためファイルを保存できませんでした</value>
+  </data>
+  <data name="LoopEndFixCaution" xml:space="preserve">
+    <value>ループ設定を自動調整した結果、ループ終了が音声ファイルより長くなったため、ループ設定を自動調整できませんでした。自動調整せずにBRSTMを作成してもよろしいですか？(実機で再生したときにループがずれる可能性があります)</value>
+    
+  </data>
+  <data name="TempFolderFailedAlert" xml:space="preserve">
+    <value>tmpフォルダーの作成に失敗しました</value>
+  </data>
+  <data name="FailedAudioSplitAlert" xml:space="preserve">
+    <value>音声ファイルの分割中にエラーが発生しました</value>
+  </data>
+  <data name="FailedBrstmBuildAlert" xml:space="preserve">
+    <value>不明なエラーが発生したため、BRSTMを作成できませんでした</value>
+  </data>
+  <data name="FailedDspadpcmProcessAlert" xml:space="preserve">
+    <value>"DSPADPCM.exe"でエラーが発生しました</value>
+  </data>
+</root>
