@@ -115,10 +115,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ImportAudioLabel" xml:space="preserve">
-    <value>Audio file to build BRSTM:</value>
+    <value>Input Path:</value>
   </data>
   <data name="DestinationLabel" xml:space="preserve">
-    <value>Destination:</value>
+    <value>Output Path:</value>
   </data>
   <data name="ChannelLabel" xml:space="preserve">
     <value>Channels:</value>
@@ -166,13 +166,13 @@
     <value>samples</value>
   </data>
   <data name="ProgressWaveSplit" xml:space="preserve">
-    <value>Splitting audio file</value>
+    <value>Splitting channels...</value>
   </data>
   <data name="ProgressBrstmBuild" xml:space="preserve">
-    <value>Building BRSTM</value>
+    <value>Building BRSTM...</value>
   </data>
   <data name="ProgressDspadpcmEncode" xml:space="preserve">
-    <value>Encoding DSPADPCM</value>
+    <value>Encoding DSPADPCM...</value>
   </data>
   <data name="FiletypeSpecifiedInput" xml:space="preserve">
     <value>All supported files</value>
@@ -196,18 +196,21 @@
     <value>Unable to save file due to error occurring</value>
   </data>
   <data name="LoopEndFixCaution" xml:space="preserve">
-    <value>Unable to fix loop end point automatically. Due to trying to fix loop end point, the value of Loop End Sample has set later than source. Would you like to create BRSTM without loop end point auto-fix?</value>
+    <value>Unable to fix loop end point automatically.\nDue to trying to fix loop end point,\nthe value of Loop End Sample has set later than source.\nWould you like to create BRSTM without loop end point auto-fix?</value>
   </data>
   <data name="TempFolderFailedAlert" xml:space="preserve">
     <value>Failed to create tmp folder</value>
   </data>
   <data name="FailedAudioSplitAlert" xml:space="preserve">
-    <value>An error has occurred while spliting audio file</value>
+    <value>Error has occurred while spliting audio file</value>
   </data>
   <data name="FailedBrstmBuildAlert" xml:space="preserve">
-    <value>An error has occurred while building BRSTM</value>
+    <value>Error has occurred while building BRSTM</value>
   </data>
   <data name="FailedDspadpcmProcessAlert" xml:space="preserve">
-    <value>An error has occurred in DSPADPCM process</value>
+    <value>Error has occurred in DSPADPCM process</value>
+  </data>
+  <data name="BrstmBuildSucceed" xml:space="preserve">
+    <value>BRSTM has created successfully</value>
   </data>
 </root>

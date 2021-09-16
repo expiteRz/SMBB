@@ -12,6 +12,7 @@ using System.Windows.Controls;
 using NAudio.MediaFoundation;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using SMBB.Properties;
 
 namespace SMBB
 {
@@ -505,7 +506,7 @@ namespace SMBB
             toolsPath = AppDomain.CurrentDomain.BaseDirectory + "tools\\";
             tmpPath = AppDomain.CurrentDomain.BaseDirectory + "tmp\\";
             bool needToolFilesOK = true;
-            string needToolFilesErrMsg = "必要なファイルが不足しています。以下のファイルを\"tools\"フォルダーに入れてください\n";
+            string needToolFilesErrMsg = $"{Properties.Resources.NonToolsAlert}\n";
             for (int i = 0;i < needToolFiles.Length;i++)
             {
                 if (!File.Exists(toolsPath + needToolFiles[i]))
@@ -517,7 +518,7 @@ namespace SMBB
             }
             if (!needToolFilesOK)
             {
-                MessageBox.Show(needToolFilesErrMsg, "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(needToolFilesErrMsg, Properties.Resources.ErrorCapacity, MessageBoxButton.OK, MessageBoxImage.Error);
                 Application.Current.Shutdown();
             }
         }
@@ -529,9 +530,10 @@ namespace SMBB
             sampleWarnText.Text = "";
             if (isLooped)
             {
-                if (loopStart > loopEnd) sampleWarnText.Text = "警告:ループ開始がループ終了よりも後になっています";
-                if (loopStart == loopEnd) sampleWarnText.Text = "警告:ループ開始とループ終了が同じになっています";
-                if (srcWav.error == Sound.NO_ERROR && loopEnd > srcWav.sampleLength) sampleWarnText.Text = "警告:ループ終了が音声ファイル(" + srcWav.sampleLength.ToString() + "サンプル)より長いです";
+                if (loopStart > loopEnd) sampleWarnText.Text = Properties.Resources.LoopStartAfterEndWarning;
+                if (loopStart == loopEnd) sampleWarnText.Text = Properties.Resources.LoopValuesSameWarning;
+                if (srcWav.error == Sound.NO_ERROR && loopEnd > srcWav.sampleLength) // sampleWarnText.Text = $"{Properties.Resources.LoopEndOverSourceWarning} ({srcWav.sampleLength} {Properties.Resources.SampleUnit})";
+                    loopEnd = srcWav.sampleLength;
                 loopStartText.IsEnabled = true;
                 loopEndText.IsEnabled = true;
                 lpLoadButton.IsEnabled = true;
@@ -561,13 +563,13 @@ namespace SMBB
                 switch (progress)
                 {
                     case SPILIT_WAV:
-                        progressText.Text = "進捗:WAVファイル分割中";
+                        progressText.Text = Properties.Resources.ProgressWaveSplit;
                         break;
                     case BUILD_BRSTM:
-                        progressText.Text = "進捗:BRSTM作成中";
+                        progressText.Text = Properties.Resources.ProgressBrstmBuild;
                         break;
                     default:
-                        progressText.Text = "進捗:DSPADPCMエンコード中 (" + progress.ToString() + "/" + srcChannelCount.ToString() + ")";
+                        progressText.Text = $"{Properties.Resources.ProgressDspadpcmEncode} (" + progress + "/" + srcChannelCount + ")";
                         break;
                 }
                 wavButton.IsEnabled = false;
@@ -583,8 +585,10 @@ namespace SMBB
         }
         private void wavButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new OpenFileDialog();
-            dialog.Filter = "音声ファイル (*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac)|*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac|すべてのファイル(*.*)|*.*";
+            var dialog = new OpenFileDialog
+            {
+                Filter = $@"{Properties.Resources.FiletypeSpecifiedInput} (*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac)|*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac|すべてのファイル(*.*)|*.*"
+            };
             if(dialog.ShowDialog() == true)
             {
                 string filePath = dialog.FileName;
@@ -598,14 +602,17 @@ namespace SMBB
                 }
                 else
                 {
-                    MessageBox.Show("無効な音声ファイル、もしくはサポートされていないフォーマットです", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(Properties.Resources.UnableReadAudioAlert, Properties.Resources.ErrorCapacity,
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
         private void brstmButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new SaveFileDialog();
-            dialog.Filter = "BRSTMファイル (*.brstm)|*.brstm|すべてのファイル (*.*)|*.*";
+            var dialog = new SaveFileDialog
+            {
+                Filter = $@"{Properties.Resources.FiletypeSpecifiedOutput} (*.brstm)|*.brstm|すべてのファイル (*.*)|*.*"
+            };
             if(dialog.ShowDialog() == true)
             {
                 brstmOutPath = dialog.FileName;
@@ -621,8 +628,10 @@ namespace SMBB
 
         private void lpLoadButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new OpenFileDialog();
-            dialog.Filter = "ループ設定ファイル (*.lp)|*.lp|すべてのファイル (*.*)|*.*";
+            var dialog = new OpenFileDialog
+            {
+                Filter = $@"{Properties.Resources.FiletypeLoopSetting} (*.lp)|*.lp|すべてのファイル (*.*)|*.*"
+            };
             if (dialog.ShowDialog() == true)
             {
                 byte[] src = null;
@@ -632,17 +641,20 @@ namespace SMBB
                 }
                 catch
                 {
-                    MessageBox.Show("エラーが発生したためファイルを開けませんでした", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(Properties.Resources.UnableOpenFileAlert, Properties.Resources.ErrorCapacity,
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
                 if (src.Length != 0x10)
                 {
-                    MessageBox.Show("無効なファイルです。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(Properties.Resources.InvalidFileAlert, Properties.Resources.ErrorCapacity,
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
                 if (Utils.bytesToUint(src, 0) != 0x504F4F4C || Utils.bytesToUint(src, 4) != 0x1796DD3D)
                 {
-                    MessageBox.Show("無効なファイルです。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(Properties.Resources.InvalidFileAlert, Properties.Resources.ErrorCapacity,
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
                 loopStart = Utils.bytesToUint(src, 8);
@@ -652,8 +664,10 @@ namespace SMBB
         }
         private void lpSaveButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new SaveFileDialog();
-            dialog.Filter = "ループ設定ファイル (*.lp)|*.lp|すべてのファイル (*.*)|*.*";
+            var dialog = new SaveFileDialog
+            {
+                Filter = $@"{Properties.Resources.FiletypeLoopSetting} (*.lp)|*.lp|すべてのファイル (*.*)|*.*"
+            };
             if (dialog.ShowDialog() == true)
             {
                 Utils.uintToBytes(lpFileData, 8, loopStart);
@@ -664,7 +678,8 @@ namespace SMBB
                 }
                 catch
                 {
-                    MessageBox.Show("エラーが発生したためファイルを保存できませんでした", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(Properties.Resources.UnableSaveFileAlert, Properties.Resources.ErrorCapacity,
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -737,7 +752,8 @@ namespace SMBB
             realLoopEnd = loopEnd + loopAutoShift;
             if (realLoopEnd > srcWav.sampleLength && isLooped)
             {
-                var result = MessageBox.Show("ループ設定を自動調整した結果、ループ終了が音声ファイルより長くなったため、ループ設定を自動調整できませんでした。自動調整せずにBRSTMを作成してもよろしいですか？(実機で再生したときにループがずれる可能性があります)", "", MessageBoxButton.YesNo, MessageBoxImage.Question);
+                var result = MessageBox.Show(Properties.Resources.LoopEndFixCaution, "",
+                    MessageBoxButton.YesNo, MessageBoxImage.Question);
                 if (result == MessageBoxResult.No)
                 {
                     progress = NO_PROGRESS;
@@ -761,7 +777,8 @@ namespace SMBB
             }
             catch
             {
-                MessageBox.Show("tmpフォルダーの作成に失敗しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(Properties.Resources.TempFolderFailedAlert, Properties.Resources.ErrorCapacity,
+                    MessageBoxButton.OK, MessageBoxImage.Error);
                 progress = NO_PROGRESS;
                 setUI();
                 return;
@@ -773,9 +790,10 @@ namespace SMBB
             {
                 srcWavs[i].toPCM16();
                 srcWavs[i].sampleRate = realSampleRate;
-                if (!srcWavs[i].saveAsWaveFile(tmpPath + i.ToString() + ".wav"))
+                if (!srcWavs[i].saveAsWaveFile(tmpPath + i + ".wav"))
                 {
-                    MessageBox.Show("音声ファイル分割中にエラーが発生しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(Properties.Resources.FailedAudioSplitAlert, Properties.Resources.ErrorCapacity,
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                     progress = NO_PROGRESS;
                     setUI();
                     return;
@@ -785,7 +803,7 @@ namespace SMBB
             setUI();
             if (isLooped)
             {
-                runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + "0.wav\" \"" + tmpPath + "0.dsp\" -l" + realLoopStart.ToString() + "-" + realLoopEnd.ToString());
+                runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + "0.wav\" \"" + tmpPath + "0.dsp\" -l" + realLoopStart + "-" + realLoopEnd);
             }
             else
             {
@@ -794,12 +812,14 @@ namespace SMBB
         }
         void runCmd(string exePath, string args)
         {
-            ProcessStartInfo cmd = new ProcessStartInfo(exePath, args);
-            cmd.CreateNoWindow = true;
-            cmd.UseShellExecute = false;
+            ProcessStartInfo cmd = new ProcessStartInfo(exePath, args)
+            {
+                CreateNoWindow = true,
+                UseShellExecute = false
+            };
             Process process = Process.Start(cmd);
             process.EnableRaisingEvents = true;
-            process.Exited += new EventHandler(cmdExitHandler);
+            process.Exited += cmdExitHandler;
         }
         void cmdExitHandler(object sender, EventArgs e)
         {
@@ -808,7 +828,7 @@ namespace SMBB
             {
                 try
                 {
-                    for(uint i = 0;i < srcChannelCount;i++) File.Delete(AppDomain.CurrentDomain.BaseDirectory + i.ToString() + ".txt");
+                    for(uint i = 0;i < srcChannelCount;i++) File.Delete(AppDomain.CurrentDomain.BaseDirectory + i + ".txt");
                 }
                 catch
                 {
@@ -817,7 +837,8 @@ namespace SMBB
                 progress = NO_PROGRESS;
                 if (!File.Exists(tmpPath + "output.brstm"))
                 {
-                    MessageBox.Show("不明なエラーが発生したため、BRSTMを作成できませんでした", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(Properties.Resources.FailedBrstmBuildAlert, Properties.Resources.ErrorCapacity,
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                 }
                 else
                 {
@@ -825,19 +846,21 @@ namespace SMBB
                     {
                         File.Delete(brstmOutPath);
                         File.Move(tmpPath + "output.brstm", brstmOutPath);
-                        MessageBox.Show("BRSTMは正常に作成されました", "", MessageBoxButton.OK, MessageBoxImage.Information);
+                        MessageBox.Show(Properties.Resources.BrstmBuildSucceed, "", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     catch
                     {
-                        MessageBox.Show("不明なエラーが発生したため、BRSTMを作成できませんでした", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                        MessageBox.Show(Properties.Resources.FailedBrstmBuildAlert, Properties.Resources.ErrorCapacity,
+                            MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
             }
             else
             {
-                if (!File.Exists(tmpPath + (progress - 1).ToString() + ".dsp"))
+                if (!File.Exists(tmpPath + (progress - 1) + ".dsp"))
                 {
-                    MessageBox.Show("\"DSPADPCM.exe\"でエラーが発生しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(Properties.Resources.FailedDspadpcmProcessAlert, Properties.Resources.ErrorCapacity,
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                     progress = NO_PROGRESS;
                 }
                 else
@@ -860,19 +883,19 @@ namespace SMBB
                         progress++;
                         if (isLooped)
                         {
-                            runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + (progress - 1).ToString() + ".wav\" \"" + tmpPath + (progress - 1).ToString() + ".dsp\" -l" + realLoopStart.ToString() + "-" + realLoopEnd.ToString());
+                            runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + (progress - 1) + ".wav\" \"" + tmpPath + (progress - 1) + ".dsp\" -l" + realLoopStart + "-" + realLoopEnd);
                         }
                         else
                         {
-                            runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + (progress - 1).ToString() + ".wav\" \"" + tmpPath + (progress - 1).ToString() + ".dsp\"");
+                            runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + (progress - 1) + ".wav\" \"" + tmpPath + (progress - 1) + ".dsp\"");
                         }
                     }
                 }
             }
-            this.Dispatcher.Invoke((Action)(() =>
+            Dispatcher.Invoke(() =>
             {
                 setUI();
-            }));
+            });
         }
 
         private void finalLapCheckBox_Click(object sender, RoutedEventArgs e)

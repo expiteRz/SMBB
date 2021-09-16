@@ -97,7 +97,7 @@
     <value>エラーが発生したためファイルを保存できませんでした</value>
   </data>
   <data name="LoopEndFixCaution" xml:space="preserve">
-    <value>ループ設定を自動調整した結果、ループ終了が音声ファイルより長くなったため、ループ設定を自動調整できませんでした。自動調整せずにBRSTMを作成してもよろしいですか？(実機で再生したときにループがずれる可能性があります)</value>
+    <value>ループ設定を自動調整した結果、ループ終了が音声ファイルより長くなったため、\nループ設定を自動調整できませんでした。\n自動調整せずにBRSTMを作成してもよろしいですか？\n(実機で再生したときにループがずれる可能性があります)</value>
     
   </data>
   <data name="TempFolderFailedAlert" xml:space="preserve">
@@ -111,5 +111,8 @@
   </data>
   <data name="FailedDspadpcmProcessAlert" xml:space="preserve">
     <value>"DSPADPCM.exe"でエラーが発生しました</value>
+  </data>
+  <data name="BrstmBuildSucceed" xml:space="preserve">
+    <value>BRSTMは正常に作成されました</value>
   </data>
 </root>
