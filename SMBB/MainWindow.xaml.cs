@@ -462,7 +462,7 @@ namespace SMBB
             }
             return Utils.byteArrayCat(waveHeader, fmtElement, dataElement);
         }
-        void changeSampleLength(uint _sampleLength)
+        public void changeSampleLength(uint _sampleLength)
         {
             if (format == PCM_8 || format == PCM_16 || format == PCM_24 || format == PCM_32 || format == PCM_64 || format == PCM_FLOAT)
             {
@@ -801,6 +801,7 @@ namespace SMBB
                 srcWavs[i].toPCM16();
                 srcWavs[i].sampleRate = realSampleRate;
                 if ((loopEnd - loopStart + 1) >= loopAutoShift) srcWavs[i].sampleCopy(loopEnd + 1, loopStart, loopAutoShift);
+                if (isLooped) srcWavs[i].changeSampleLength(realLoopEnd + 1);
                 if (!srcWavs[i].saveAsWaveFile(tmpPath + i.ToString() + ".wav"))
                 {
                     MessageBox.Show("音声ファイル分割中にエラーが発生しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
