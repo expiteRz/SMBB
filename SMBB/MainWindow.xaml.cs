@@ -524,14 +524,21 @@ namespace SMBB
         private void setUI()
         {
             if (buildBrstm == null) return;
-            buildBrstm.IsEnabled = false;
+            buildBrstm.IsEnabled = true;
             brstmPathShow.Text = brstmOutPath;
             sampleWarnText.Text = "";
             if (isLooped)
             {
-                if (loopStart > loopEnd) sampleWarnText.Text = "警告:ループ開始がループ終了よりも後になっています";
-                if (loopStart == loopEnd) sampleWarnText.Text = "警告:ループ開始とループ終了が同じになっています";
-                if (srcWav.error == Sound.NO_ERROR && loopEnd > srcWav.sampleLength) sampleWarnText.Text = "警告:ループ終了が音声ファイル(" + srcWav.sampleLength.ToString() + "サンプル)より長いです";
+                if (loopStart >= loopEnd)
+                {
+                    sampleWarnText.Text = "ループ終了をループ開始より後にしてください";
+                    buildBrstm.IsEnabled = false;
+                }
+                if (srcWav.error == Sound.NO_ERROR && loopEnd >= srcWav.sampleLength)
+                {
+                    sampleWarnText.Text = "ループ終了を" + (srcWav.sampleLength - 1).ToString() + "以下にしてください";
+                    buildBrstm.IsEnabled = false;
+                }
                 loopStartText.IsEnabled = true;
                 loopEndText.IsEnabled = true;
                 lpLoadButton.IsEnabled = true;
@@ -554,7 +561,7 @@ namespace SMBB
                 channelCountSelect.IsEnabled = true;
                 finalLapCheckBox.IsEnabled = true;
                 loopCheckBox.IsEnabled = true;
-                if (brstmOutPath != "" && srcWav.error == Sound.NO_ERROR) buildBrstm.IsEnabled = true;
+                if (brstmOutPath == "" || srcWav.error != Sound.NO_ERROR) buildBrstm.IsEnabled = false;
             }
             else
             {
@@ -579,6 +586,7 @@ namespace SMBB
                 loopEndText.IsEnabled = false;
                 lpLoadButton.IsEnabled = false;
                 lpSaveButton.IsEnabled = false;
+                buildBrstm.IsEnabled = false;
             }
         }
         private void wavButton_Click(object sender, RoutedEventArgs e)
