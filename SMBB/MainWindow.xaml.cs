@@ -462,6 +462,25 @@ namespace SMBB
             }
             return Utils.byteArrayCat(waveHeader, fmtElement, dataElement);
         }
+        void changeSampleLength(uint _sampleLength)
+        {
+            if (format == PCM_8 || format == PCM_16 || format == PCM_24 || format == PCM_32 || format == PCM_64 || format == PCM_FLOAT)
+            {
+                Array.Resize(ref data, (int)(_sampleLength * channelCount * (getBps() / 8)));
+                sampleLength = _sampleLength;
+            }
+        }
+        public void sampleCopy(uint destIndex, uint srcIndex, uint length)
+        {
+            if ((destIndex + length) > sampleLength) changeSampleLength(destIndex + length);
+            if (format == PCM_8 || format == PCM_16 || format == PCM_24 || format == PCM_32 || format == PCM_64 || format == PCM_FLOAT)
+            {
+                uint byteSrcIndex = srcIndex * channelCount * (getBps() / 8);
+                uint byteDestIndex = destIndex * channelCount * (getBps() / 8);
+                uint byteLength = length * channelCount * (getBps() / 8);
+                Utils.memcpy(data, byteDestIndex, data, byteSrcIndex, byteLength);
+            }
+        }
         public bool saveAsWaveFile(string path)
         {
             try
@@ -739,21 +758,21 @@ namespace SMBB
             {
                 realSampleRate = srcWav.sampleRate;
             }
-            uint loopAutoShift = loopStart % 14336;
-            if(loopAutoShift != 0)loopAutoShift = 14336 - loopAutoShift;
-            realLoopStart = loopStart + loopAutoShift;
-            realLoopEnd = loopEnd + loopAutoShift;
-            if (realLoopEnd > srcWav.sampleLength && isLooped)
+            uint loopAutoShift = 0;
+            if (isLooped)
             {
-                var result = MessageBox.Show("ループ設定を自動調整した結果、ループ終了が音声ファイルより長くなったため、ループ設定を自動調整できませんでした。自動調整せずにBRSTMを作成してもよろしいですか？(実機で再生したときにループがずれる可能性があります)", "", MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result == MessageBoxResult.No)
-                {
-                    progress = NO_PROGRESS;
-                    setUI();
-                    return;
-                }
+                loopAutoShift = loopStart % 14336;
+                if (loopAutoShift != 0) loopAutoShift = 14336 - loopAutoShift;
+            }
+            if((loopEnd - loopStart+ 1) < loopAutoShift)
+            {
                 realLoopStart = loopStart;
                 realLoopEnd = loopEnd;
+            }
+            else
+            {
+                realLoopStart = loopStart + loopAutoShift;
+                realLoopEnd = loopEnd + loopAutoShift;
             }
             try
             {
@@ -781,6 +800,7 @@ namespace SMBB
             {
                 srcWavs[i].toPCM16();
                 srcWavs[i].sampleRate = realSampleRate;
+                if ((loopEnd - loopStart + 1) >= loopAutoShift) srcWavs[i].sampleCopy(loopEnd + 1, loopStart, loopAutoShift);
                 if (!srcWavs[i].saveAsWaveFile(tmpPath + i.ToString() + ".wav"))
                 {
                     MessageBox.Show("音声ファイル分割中にエラーが発生しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
