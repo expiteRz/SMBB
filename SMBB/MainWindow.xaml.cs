@@ -463,6 +463,25 @@ namespace SMBB
             }
             return Utils.byteArrayCat(waveHeader, fmtElement, dataElement);
         }
+        public void changeSampleLength(uint _sampleLength)
+        {
+            if (format == PCM_8 || format == PCM_16 || format == PCM_24 || format == PCM_32 || format == PCM_64 || format == PCM_FLOAT)
+            {
+                Array.Resize(ref data, (int)(_sampleLength * channelCount * (getBps() / 8)));
+                sampleLength = _sampleLength;
+            }
+        }
+        public void sampleCopy(uint destIndex, uint srcIndex, uint length)
+        {
+            if ((destIndex + length) > sampleLength) changeSampleLength(destIndex + length);
+            if (format == PCM_8 || format == PCM_16 || format == PCM_24 || format == PCM_32 || format == PCM_64 || format == PCM_FLOAT)
+            {
+                uint byteSrcIndex = srcIndex * channelCount * (getBps() / 8);
+                uint byteDestIndex = destIndex * channelCount * (getBps() / 8);
+                uint byteLength = length * channelCount * (getBps() / 8);
+                Utils.memcpy(data, byteDestIndex, data, byteSrcIndex, byteLength);
+            }
+        }
         public bool saveAsWaveFile(string path)
         {
             try
@@ -525,15 +544,21 @@ namespace SMBB
         private void setUI()
         {
             if (buildBrstm == null) return;
-            buildBrstm.IsEnabled = false;
+            buildBrstm.IsEnabled = true;
             brstmPathShow.Text = brstmOutPath;
             sampleWarnText.Text = "";
             if (isLooped)
             {
-                if (loopStart > loopEnd) sampleWarnText.Text = Properties.Resources.LoopStartAfterEndWarning;
-                if (loopStart == loopEnd) sampleWarnText.Text = Properties.Resources.LoopValuesSameWarning;
-                if (srcWav.error == Sound.NO_ERROR && loopEnd > srcWav.sampleLength) // sampleWarnText.Text = $"{Properties.Resources.LoopEndOverSourceWarning} ({srcWav.sampleLength} {Properties.Resources.SampleUnit})";
-                    loopEnd = srcWav.sampleLength;
+                if (loopStart >= loopEnd)
+                {
+                    sampleWarnText.Text = Properties.Resources.LoopStartAfterEndWarning;
+                    buildBrstm.IsEnabled = false;
+                }
+                if (srcWav.error == Sound.NO_ERROR && loopEnd >= srcWav.sampleLength)
+                {
+                    sampleWarnText.Text = "ループ終了を" + (srcWav.sampleLength - 1).ToString() + "以下にしてください";
+                    buildBrstm.IsEnabled = false;
+                }
                 loopStartText.IsEnabled = true;
                 loopEndText.IsEnabled = true;
                 lpLoadButton.IsEnabled = true;
@@ -556,7 +581,7 @@ namespace SMBB
                 channelCountSelect.IsEnabled = true;
                 finalLapCheckBox.IsEnabled = true;
                 loopCheckBox.IsEnabled = true;
-                if (brstmOutPath != "" && srcWav.error == Sound.NO_ERROR) buildBrstm.IsEnabled = true;
+                if (brstmOutPath == "" || srcWav.error != Sound.NO_ERROR) buildBrstm.IsEnabled = false;
             }
             else
             {
@@ -581,6 +606,7 @@ namespace SMBB
                 loopEndText.IsEnabled = false;
                 lpLoadButton.IsEnabled = false;
                 lpSaveButton.IsEnabled = false;
+                buildBrstm.IsEnabled = false;
             }
         }
         private void wavButton_Click(object sender, RoutedEventArgs e)
@@ -748,22 +774,21 @@ namespace SMBB
             {
                 realSampleRate = srcWav.sampleRate;
             }
-            uint loopAutoShift = loopStart % 14336;
-            if(loopAutoShift != 0)loopAutoShift = 14336 - loopAutoShift;
-            realLoopStart = loopStart + loopAutoShift;
-            realLoopEnd = loopEnd + loopAutoShift;
-            if (realLoopEnd > srcWav.sampleLength && isLooped)
+            uint loopAutoShift = 0;
+            if (isLooped)
             {
-                var result = MessageBox.Show(Properties.Resources.LoopEndFixCaution, "",
-                    MessageBoxButton.YesNo, MessageBoxImage.Question);
-                if (result == MessageBoxResult.No)
-                {
-                    progress = NO_PROGRESS;
-                    setUI();
-                    return;
-                }
+                loopAutoShift = loopStart % 14336;
+                if (loopAutoShift != 0) loopAutoShift = 14336 - loopAutoShift;
+            }
+            if((loopEnd - loopStart+ 1) < loopAutoShift)
+            {
                 realLoopStart = loopStart;
                 realLoopEnd = loopEnd;
+            }
+            else
+            {
+                realLoopStart = loopStart + loopAutoShift;
+                realLoopEnd = loopEnd + loopAutoShift;
             }
             try
             {
@@ -793,7 +818,9 @@ namespace SMBB
             {
                 srcWavs[i].toPCM16();
                 srcWavs[i].sampleRate = realSampleRate;
-                if (!srcWavs[i].saveAsWaveFile(tmpPath + i + ".wav"))
+                if ((loopEnd - loopStart + 1) >= loopAutoShift) srcWavs[i].sampleCopy(loopEnd + 1, loopStart, loopAutoShift);
+                if (isLooped) srcWavs[i].changeSampleLength(realLoopEnd + 1);
+                if (!srcWavs[i].saveAsWaveFile(tmpPath + i.ToString() + ".wav"))
                 {
                     MessageBox.Show(Properties.Resources.FailedAudioSplitAlert, Properties.Resources.ErrorCapacity,
                         MessageBoxButton.OK, MessageBoxImage.Error);
