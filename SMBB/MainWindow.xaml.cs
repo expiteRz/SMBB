@@ -524,7 +524,6 @@ namespace SMBB
         uint srcChannelCount;
         uint destChannelCount = 2;
         string brstmOutPath = "";
-        public bool volumePatch = false;
 
         public MainWindow()
         {
@@ -928,16 +927,7 @@ namespace SMBB
 
         private void VolumeCheckbox_OnClick(object sender, RoutedEventArgs e)
         {
-            if (VolumeTextBox.IsEnabled == false)
-            {
-                VolumeTextBox.IsEnabled = true;
-                volumePatch = true;
-            }
-            else
-            {
-                VolumeTextBox.IsEnabled = false;
-                volumePatch = false;
-            }
+            VolumeTextBox.IsEnabled = VolumeTextBox.IsEnabled == false;
         }
     }
 }
