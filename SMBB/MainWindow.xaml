@@ -85,9 +85,9 @@
                 <TextBlock Grid.Row="1" Text="音量:" TextAlignment="Right" Margin="128,0,112,0"
                            Grid.ColumnSpan="2" Grid.Column="0"></TextBlock>
                 <TextBox x:Name="VolumeTextBox" Grid.Row="1" Height="20" Margin="80,0,0,0" Grid.Column="1" 
-                         Text="100" IsEnabled="False" LostFocus="VolumeTextBox_OnLostFocus"
-                         TextChanged="VolumeTextBox_OnTextChanged" InputMethod.IsInputMethodEnabled="False"
-                         PreviewTextInput="VolumeTextBox_OnPreviewTextInput"/>
+                         Text="100" IsEnabled="False" LostFocus="VolumeTextBox_SeveralFunc"
+                         TextChanged="VolumeTextBox_SeveralFunc" InputMethod.IsInputMethodEnabled="False"
+                         PreviewTextInput="VolumeTextBox_SeveralFunc"/>
             </Grid>
         </GroupBox>
         <TextBlock x:Name="progressText" Grid.Row="11" Margin="20,0,20,0"></TextBlock>

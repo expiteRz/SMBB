@@ -917,25 +917,7 @@ namespace SMBB
             finalLap = (bool)finalLapCheckBox.IsChecked;
         }
 
-        private void VolumeTextBox_OnLostFocus(object sender, RoutedEventArgs e)
-        {
-            var volume = VolumeTextBox.Text;
-
-            if (notIntReg.IsMatch(volume) || volume == "") VolumeTextBox.Text = "0";
-            else if (int.Parse(volume) > 127) VolumeTextBox.Text = "127";
-            else if (int.Parse(volume) < 0) VolumeTextBox.Text = "0";
-        }
-
-        private void VolumeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
-        {
-            var volume = VolumeTextBox.Text;
-
-            if (notIntReg.IsMatch(volume) || volume == "") VolumeTextBox.Text = "0";
-            else if (int.Parse(volume) > 127) VolumeTextBox.Text = "127";
-            else if (int.Parse(volume) < 0) VolumeTextBox.Text = "0";
-        }
-
-        private void VolumeTextBox_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
+        private void VolumeTextBox_SeveralFunc(object sender, EventArgs e)
         {
             var volume = VolumeTextBox.Text;
 
