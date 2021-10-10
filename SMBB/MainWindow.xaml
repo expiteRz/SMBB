@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SMBB"
         mc:Ignorable="d"
-        Title="Simple Multi Brstm Builder v0.5" Height="470" Width="400" ResizeMode="CanMinimize">
+        Title="Simple Multi Brstm Builder v0.5" Height="550" Width="400" ResizeMode="CanMinimize">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="20"/>
@@ -18,7 +18,7 @@
             <RowDefinition Height="10"/>
             <RowDefinition Height="20"/>
             <RowDefinition Height="150"/>
-            <RowDefinition Height="10"/>
+            <RowDefinition Height="55"/>
             <RowDefinition Height="20"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -58,7 +58,7 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <CheckBox x:Name="loopCheckBox"  Grid.Row="1" Content="" IsChecked="False" Margin="10,0,0,0" Click="loopCheckBox_Click"/>
+                <CheckBox x:Name="loopCheckBox" Grid.Row="1" Content="" IsChecked="False" Margin="10,0,0,0" Click="loopCheckBox_Click"/>
                 <TextBlock Grid.Row="1" Text="ループさせる" Margin="28,0,0,0" Grid.ColumnSpan="2"></TextBlock>
                 <TextBlock Grid.Row="1" Text="ループ開始(サンプル数):" Margin="128,0,93,0" Grid.ColumnSpan="2"></TextBlock>
                 <TextBox x:Name="loopStartText" Grid.Row="1" Height="20" Margin="80,0,0,0" Grid.Column="1" Text="0"  IsEnabled="False" LostFocus="loopStartText_LostFocus" TextChanged="loopStartText_TextChanged"/>
@@ -67,6 +67,27 @@
                 <TextBlock x:Name="sampleWarnText" Foreground="Red" Grid.Row="5" Grid.ColumnSpan="2" Margin="20,0,0,0"></TextBlock>
                 <Button x:Name="lpLoadButton" Grid.Row="7" Margin="10,0,10,0" Click="lpLoadButton_Click" IsEnabled="False">ループ設定読み込み</Button>
                 <Button x:Name="lpSaveButton" Grid.Row="7" Margin="10,0,10,0" Grid.Column="1" Click="lpSaveButton_Click" IsEnabled="False">ループ設定保存</Button>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="10" Header="音量設定(CTGP・対応パック専用)" Margin="20,0,20,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <!-- Custom BRSTM volume specify area -->
+                <CheckBox x:Name="VolumeCheckbox" Grid.Row="1" Content="有効" IsChecked="False"
+                          Margin="10,0,0,0" Click="VolumeCheckbox_OnClick"/>
+                <TextBlock Grid.Row="1" Text="音量:" TextAlignment="Right" Margin="128,0,112,0"
+                           Grid.ColumnSpan="2" Grid.Column="0"></TextBlock>
+                <TextBox x:Name="VolumeTextBox" Grid.Row="1" Height="20" Margin="80,0,0,0" Grid.Column="1" 
+                         Text="100" IsEnabled="False" LostFocus="VolumeTextBox_OnLostFocus"
+                         TextChanged="VolumeTextBox_OnTextChanged" InputMethod.IsInputMethodEnabled="False"
+                         PreviewTextInput="VolumeTextBox_OnPreviewTextInput"/>
             </Grid>
         </GroupBox>
         <TextBlock x:Name="progressText" Grid.Row="11" Margin="20,0,20,0"></TextBlock>

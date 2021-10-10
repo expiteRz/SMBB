@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using NAudio.MediaFoundation;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
@@ -301,6 +302,11 @@ namespace SMBB
             format = PCM_16;
         }
 
+        /// <summary>
+        /// AACフォーマットの音声ファイルをWAVEフォーマットに変換
+        /// </summary>
+        /// <param name="path">ファイルまでのパス</param>
+        /// <returns>バイト配列に変換した音声データ</returns>
         byte[] ReadAacFromFile(string path)
         {
             try
@@ -518,6 +524,8 @@ namespace SMBB
         uint srcChannelCount;
         uint destChannelCount = 2;
         string brstmOutPath = "";
+        public bool volumePatch = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -907,6 +915,47 @@ namespace SMBB
         private void finalLapCheckBox_Click(object sender, RoutedEventArgs e)
         {
             finalLap = (bool)finalLapCheckBox.IsChecked;
+        }
+
+        private void VolumeTextBox_OnLostFocus(object sender, RoutedEventArgs e)
+        {
+            var volume = VolumeTextBox.Text;
+
+            if (notIntReg.IsMatch(volume) || volume == "") VolumeTextBox.Text = "0";
+            else if (int.Parse(volume) > 127) VolumeTextBox.Text = "127";
+            else if (int.Parse(volume) < 0) VolumeTextBox.Text = "0";
+        }
+
+        private void VolumeTextBox_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            var volume = VolumeTextBox.Text;
+
+            if (notIntReg.IsMatch(volume) || volume == "") VolumeTextBox.Text = "0";
+            else if (int.Parse(volume) > 127) VolumeTextBox.Text = "127";
+            else if (int.Parse(volume) < 0) VolumeTextBox.Text = "0";
+        }
+
+        private void VolumeTextBox_OnPreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            var volume = VolumeTextBox.Text;
+
+            if (notIntReg.IsMatch(volume) || volume == "") VolumeTextBox.Text = "0";
+            else if (int.Parse(volume) > 127) VolumeTextBox.Text = "127";
+            else if (int.Parse(volume) < 0) VolumeTextBox.Text = "0";
+        }
+
+        private void VolumeCheckbox_OnClick(object sender, RoutedEventArgs e)
+        {
+            if (VolumeTextBox.IsEnabled == false)
+            {
+                VolumeTextBox.IsEnabled = true;
+                volumePatch = true;
+            }
+            else
+            {
+                VolumeTextBox.IsEnabled = false;
+                volumePatch = false;
+            }
         }
     }
 }
