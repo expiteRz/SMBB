@@ -127,6 +127,7 @@ namespace SMBB
         public const string WAVE_TAG = "WAVE";
         public const string DATA_TAG = "data";
         public const string FMT_TAG = "fmt ";
+        public const string SMPL_TAG = "smpl";
         public const ushort PCM_8 = 0;
         public const ushort PCM_16 = 1;
         public const ushort PCM_24 = 65534;
@@ -141,11 +142,14 @@ namespace SMBB
         public byte error = ERROR_INVALID_ARGS;
         public uint sampleRate;
         public uint sampleLength;
+        public bool isLooped = false;
+        public uint loopStart = 0;
+        public uint loopEnd = 0;
         public ushort channelCount;
         public ushort format;
         public byte[] data = null;
         public Sound(){}
-        public Sound(uint _sampleRate, uint _sampleLength, ushort _channelCount, ushort _format)
+        public Sound(uint _sampleRate, uint _sampleLength, ushort _channelCount, ushort _format, bool _isLooped, uint _loopStart, uint _loopEnd)
         {
             if (_format != PCM_8 && _format != PCM_16 && _format != PCM_24 && _format != PCM_32 && _format != PCM_64 && _format != PCM_FLOAT)
             {
@@ -156,6 +160,9 @@ namespace SMBB
             sampleLength = _sampleLength;
             channelCount = _channelCount;
             format = _format;
+            isLooped = _isLooped;
+            loopStart = _loopStart;
+            loopEnd = _loopEnd;
             uint bytePerSample = getBps() / 8;
             data = new byte[bytePerSample * channelCount * sampleLength];
             error = NO_ERROR;
@@ -277,6 +284,18 @@ namespace SMBB
                         sampleLength = curElementSize / bps;
                     }
                 }
+                else if (curElementName == SMPL_TAG)
+                {
+                    if (curElementSize >= 0x3C)
+                    {
+                        if(Utils.bytesToUint(src, curElementOffset + 0x24) != 0 && Utils.bytesToUint(src, curElementOffset + 0x30) == 0)
+                        {
+                            isLooped = true;
+                            loopStart = Utils.bytesToUint(src, curElementOffset + 0x34);
+                            loopEnd = Utils.bytesToUint(src, curElementOffset + 0x38);
+                        }
+                    }
+                }
                 curElementOffset = nextElementOffset;
             }
             if (data == null) error = ERROR_INVALID_FILE;
@@ -351,7 +370,7 @@ namespace SMBB
             Sound[] dest = new Sound[channelCount];
             for (uint i = 0; i < channelCount; i++)
             {
-                dest[i] = new Sound(sampleRate, sampleLength, 1, format);
+                dest[i] = new Sound(sampleRate, sampleLength, 1, format, isLooped, loopStart, loopEnd);
                 if (format == PCM_8 || format == PCM_16 || format == PCM_24 || format == PCM_32 || format == PCM_64 || format == PCM_FLOAT)
                 {
                     uint bytePerSample = getBps() / 8;
@@ -427,13 +446,18 @@ namespace SMBB
             if(format != PCM_16)data = destData;
             format = PCM_16;
         }
-        int sampleToTime(int sample)
+        uint sampleToTime(uint sample)
         {
-            if (sample < 0 || sampleLength <= sample) return -1;
-            float time = sample / (float)sampleRate;
+            double time = sample / (double)sampleRate;
             time *= 1000;
-            time += 0.5f;
-            return (int)time;
+            time += 0.5;
+            return (uint)time;
+        }
+        uint timeToSample(uint time)
+        {
+            double sample = ((double)time / 1000) * sampleRate;
+            sample += 0.5;
+            return (uint)sample;
         }
         public byte[] saveAsWaveBytes()
         {
@@ -481,6 +505,23 @@ namespace SMBB
                 Utils.memcpy(data, byteDestIndex, data, byteSrcIndex, byteLength);
             }
         }
+        public void adjustLoop()
+        {
+            if (!isLooped) return;
+            uint loopAutoShift = loopStart % 14336;
+            if (loopAutoShift != 0) loopAutoShift = 14336 - loopAutoShift;
+            if ((loopEnd - loopStart + 1) >= loopAutoShift)
+            {
+                sampleCopy(loopEnd + 1, loopStart, loopAutoShift);
+                loopStart += loopAutoShift;
+                loopEnd += loopAutoShift;
+            }
+
+        }
+        public void deleteOutro()
+        {
+            if(isLooped) changeSampleLength(loopEnd + 1);
+        }
         public bool saveAsWaveFile(string path)
         {
             try
@@ -509,10 +550,7 @@ namespace SMBB
         string tmpPath;
         Sound srcWav = new Sound();
         byte[] lpFileData = {0x4C, 0x4F, 0x4F, 0x50, 0x3D, 0xDD, 0x96, 0x17, 0, 0, 0, 0, 0, 0, 0, 0};
-        bool isLooped = false;
         bool finalLap = false;
-        uint loopStart = 0;
-        uint loopEnd = 0;
         uint realLoopStart;
         uint realLoopEnd;
         uint srcChannelCount;
@@ -546,18 +584,19 @@ namespace SMBB
             buildBrstm.IsEnabled = true;
             brstmPathShow.Text = brstmOutPath;
             sampleWarnText.Text = "";
-            if (isLooped)
+            if (srcWav.isLooped)
             {
-                if (loopStart >= loopEnd)
+                if (srcWav.loopStart >= srcWav.loopEnd)
                 {
                     sampleWarnText.Text = "ループ終了をループ開始より後にしてください";
                     buildBrstm.IsEnabled = false;
                 }
-                if (srcWav.error == Sound.NO_ERROR && loopEnd >= srcWav.sampleLength)
+                if (srcWav.error == Sound.NO_ERROR && srcWav.loopEnd >= srcWav.sampleLength)
                 {
                     sampleWarnText.Text = "ループ終了を" + (srcWav.sampleLength - 1).ToString() + "以下にしてください";
                     buildBrstm.IsEnabled = false;
                 }
+                loopCheckBox.IsChecked = true;
                 loopStartText.IsEnabled = true;
                 loopEndText.IsEnabled = true;
                 lpLoadButton.IsEnabled = true;
@@ -565,13 +604,14 @@ namespace SMBB
             }
             else
             {
+                loopCheckBox.IsChecked = false;
                 loopStartText.IsEnabled = false;
                 loopEndText.IsEnabled = false;
                 lpLoadButton.IsEnabled = false;
                 lpSaveButton.IsEnabled = false;
             }
-            loopStartText.Text = loopStart.ToString();
-            loopEndText.Text = loopEnd.ToString();
+            loopStartText.Text = srcWav.loopStart.ToString();
+            loopEndText.Text = srcWav.loopEnd.ToString();
             if(progress == NO_PROGRESS)
             {
                 progressText.Text = "";
@@ -672,8 +712,8 @@ namespace SMBB
                     MessageBox.Show("無効なファイルです。", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
-                loopStart = Utils.bytesToUint(src, 8);
-                loopEnd = Utils.bytesToUint(src, 0xC);
+                srcWav.loopStart = Utils.bytesToUint(src, 8);
+                srcWav.loopEnd = Utils.bytesToUint(src, 0xC);
                 setUI();
             }
         }
@@ -683,8 +723,8 @@ namespace SMBB
             dialog.Filter = "ループ設定ファイル (*.lp)|*.lp|すべてのファイル (*.*)|*.*";
             if (dialog.ShowDialog() == true)
             {
-                Utils.uintToBytes(lpFileData, 8, loopStart);
-                Utils.uintToBytes(lpFileData, 0xC, loopEnd);
+                Utils.uintToBytes(lpFileData, 8, srcWav.loopStart);
+                Utils.uintToBytes(lpFileData, 0xC, srcWav.loopEnd);
                 try
                 {
                     File.WriteAllBytes(dialog.FileName, lpFileData);
@@ -698,7 +738,7 @@ namespace SMBB
 
         private void loopCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            isLooped = (bool)loopCheckBox.IsChecked;
+            srcWav.isLooped = (bool)loopCheckBox.IsChecked;
             setUI();
         }
 
@@ -708,7 +748,7 @@ namespace SMBB
             if (loopStartText.Text == "") return;
             try
             {
-                loopStart = uint.Parse(loopStartText.Text);
+                srcWav.loopStart = uint.Parse(loopStartText.Text);
             }
             catch
             {
@@ -719,7 +759,7 @@ namespace SMBB
 
         private void loopStartText_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (loopStartText.Text == "") loopStart = 0;
+            if (loopStartText.Text == "") srcWav.loopStart = 0;
             setUI();
         }
         private void loopEndText_TextChanged(object sender, TextChangedEventArgs e)
@@ -728,7 +768,7 @@ namespace SMBB
             if (loopEndText.Text == "")return;
             try
             {
-                loopEnd = uint.Parse(loopEndText.Text);
+                srcWav.loopEnd = uint.Parse(loopEndText.Text);
             }
             catch
             {
@@ -739,7 +779,7 @@ namespace SMBB
 
         private void loopEndText_LostFocus(object sender, RoutedEventArgs e)
         {
-            if (loopEndText.Text == "") loopEnd = 0;
+            if (loopEndText.Text == "") srcWav.loopEnd = 0;
             setUI();
         }
 
@@ -757,22 +797,6 @@ namespace SMBB
             else
             {
                 realSampleRate = srcWav.sampleRate;
-            }
-            uint loopAutoShift = 0;
-            if (isLooped)
-            {
-                loopAutoShift = loopStart % 14336;
-                if (loopAutoShift != 0) loopAutoShift = 14336 - loopAutoShift;
-            }
-            if((loopEnd - loopStart+ 1) < loopAutoShift)
-            {
-                realLoopStart = loopStart;
-                realLoopEnd = loopEnd;
-            }
-            else
-            {
-                realLoopStart = loopStart + loopAutoShift;
-                realLoopEnd = loopEnd + loopAutoShift;
             }
             try
             {
@@ -800,8 +824,8 @@ namespace SMBB
             {
                 srcWavs[i].toPCM16();
                 srcWavs[i].sampleRate = realSampleRate;
-                if ((loopEnd - loopStart + 1) >= loopAutoShift) srcWavs[i].sampleCopy(loopEnd + 1, loopStart, loopAutoShift);
-                if (isLooped) srcWavs[i].changeSampleLength(realLoopEnd + 1);
+                srcWavs[i].adjustLoop();
+                srcWavs[i].deleteOutro();
                 if (!srcWavs[i].saveAsWaveFile(tmpPath + i.ToString() + ".wav"))
                 {
                     MessageBox.Show("音声ファイル分割中にエラーが発生しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
@@ -810,9 +834,11 @@ namespace SMBB
                     return;
                 }
             }
+            realLoopStart = srcWavs[0].loopStart;
+            realLoopEnd = srcWavs[0].loopEnd;
             progress = 1;
             setUI();
-            if (isLooped)
+            if (srcWav.isLooped)
             {
                 runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + "0.wav\" \"" + tmpPath + "0.dsp\" -l" + realLoopStart.ToString() + "-" + realLoopEnd.ToString());
             }
@@ -887,7 +913,7 @@ namespace SMBB
                     else
                     {
                         progress++;
-                        if (isLooped)
+                        if (srcWav.isLooped)
                         {
                             runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + (progress - 1).ToString() + ".wav\" \"" + tmpPath + (progress - 1).ToString() + ".dsp\" -l" + realLoopStart.ToString() + "-" + realLoopEnd.ToString());
                         }
