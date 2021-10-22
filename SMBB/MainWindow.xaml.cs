@@ -627,7 +627,7 @@ namespace SMBB
                 switch (progress)
                 {
                     case SPILIT_WAV:
-                        progressText.Text = "進捗:WAVファイル分割中";
+                        progressText.Text = "進捗:音声ファイル分割中";
                         break;
                     case BUILD_BRSTM:
                         progressText.Text = "進捗:BRSTM作成中";
@@ -787,17 +787,6 @@ namespace SMBB
         {
             progress = SPILIT_WAV;
             setUI();
-            uint realSampleRate;
-            if (finalLap)
-            {
-                double tmpSampleRate = srcWav.sampleRate * 1.0681;
-                tmpSampleRate += 0.5;
-                realSampleRate = (uint)tmpSampleRate;
-            }
-            else
-            {
-                realSampleRate = srcWav.sampleRate;
-            }
             try
             {
                 Directory.Delete(tmpPath, true);
@@ -817,10 +806,25 @@ namespace SMBB
                 setUI();
                 return;
             }
+            Task.Run(() => spilitWav());
+        }
+        void spilitWav()
+        {
+            uint realSampleRate;
+            if (finalLap)
+            {
+                double tmpSampleRate = srcWav.sampleRate * 1.0681;
+                tmpSampleRate += 0.5;
+                realSampleRate = (uint)tmpSampleRate;
+            }
+            else
+            {
+                realSampleRate = srcWav.sampleRate;
+            }
             Sound[] srcWavs = srcWav.spilitChannel();
             srcChannelCount = srcWav.channelCount;
             if (srcChannelCount > destChannelCount) srcChannelCount = destChannelCount;
-            for(int i = 0;i < srcChannelCount; i++)
+            for (int i = 0; i < srcChannelCount; i++)
             {
                 srcWavs[i].toPCM16();
                 srcWavs[i].sampleRate = realSampleRate;
@@ -830,14 +834,20 @@ namespace SMBB
                 {
                     MessageBox.Show("音声ファイル分割中にエラーが発生しました", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
                     progress = NO_PROGRESS;
-                    setUI();
+                    this.Dispatcher.Invoke((Action)(() =>
+                    {
+                        setUI();
+                    }));
                     return;
                 }
             }
             realLoopStart = srcWavs[0].loopStart;
             realLoopEnd = srcWavs[0].loopEnd;
             progress = 1;
-            setUI();
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                setUI();
+            }));
             if (srcWav.isLooped)
             {
                 runCmd("\"" + toolsPath + "DSPADPCM.exe\"", "-e \"" + tmpPath + "0.wav\" \"" + tmpPath + "0.dsp\" -l" + realLoopStart.ToString() + "-" + realLoopEnd.ToString());
