@@ -543,6 +543,7 @@ namespace SMBB
         const int NO_PROGRESS = 0;
         const int SPILIT_WAV = -1;
         const int BUILD_BRSTM = -2;
+        const int DECODE_SOUND = -3;
         int progress = NO_PROGRESS;
         Regex notIntReg = new Regex(@"[^0-9]");
         string[] needToolFiles = {"DSPADPCM.exe", "dsptool.dll", "hio2.dll", "soundfile.dll", "wdrev.exe" };
@@ -555,6 +556,7 @@ namespace SMBB
         uint realLoopEnd;
         uint srcChannelCount;
         uint destChannelCount = 2;
+        string wavInputPath = "";
         string brstmOutPath = "";
         public MainWindow()
         {
@@ -582,6 +584,7 @@ namespace SMBB
         {
             if (buildBrstm == null) return;
             buildBrstm.IsEnabled = true;
+            wavPathShow.Text = wavInputPath;
             brstmPathShow.Text = brstmOutPath;
             sampleWarnText.Text = "";
             if (srcWav.isLooped)
@@ -632,6 +635,9 @@ namespace SMBB
                     case BUILD_BRSTM:
                         progressText.Text = "進捗:BRSTM作成中";
                         break;
+                    case DECODE_SOUND:
+                        wavPathShow.Text = "しばらくお待ちください...";
+                        break;
                     default:
                         progressText.Text = "進捗:DSPADPCMエンコード中 (" + progress.ToString() + "/" + srcChannelCount.ToString() + ")";
                         break;
@@ -654,20 +660,31 @@ namespace SMBB
             dialog.Filter = "音声ファイル (*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac)|*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac|すべてのファイル(*.*)|*.*";
             if(dialog.ShowDialog() == true)
             {
-                string filePath = dialog.FileName;
-                Sound inputWav = new Sound(filePath);
-                if (inputWav.error == Sound.NO_ERROR)
-                {
-                    srcWav = inputWav;
-                    //loopEnd = srcWav.sampleLength;
-                    wavPathShow.Text = filePath;
-                    setUI();
-                }
-                else
+                progress = DECODE_SOUND;
+                setUI();
+                Task.Run(() => decodeSound(dialog.FileName));
+            }
+        }
+        void decodeSound(string filePath)
+        {
+            Sound inputWav = new Sound(filePath);
+            if (inputWav.error == Sound.NO_ERROR)
+            {
+                srcWav = inputWav;
+                wavInputPath = filePath;
+            }
+            else
+            {
+                this.Dispatcher.Invoke((Action)(() =>
                 {
                     MessageBox.Show("無効な音声ファイル、もしくはサポートされていないフォーマットです", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+                }));
             }
+            progress = NO_PROGRESS;
+            this.Dispatcher.Invoke((Action)(() =>
+            {
+                setUI();
+            }));
         }
         private void brstmButton_Click(object sender, RoutedEventArgs e)
         {
