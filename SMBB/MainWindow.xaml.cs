@@ -50,15 +50,26 @@ namespace SMBB
             }
             return dest;
         }
-        public static uint bytesToUint(byte[] data, uint offset)
+        public static uint bytesToUint(byte[] data, uint offset, bool isLE)
         {
             uint dest = 0;
             for (int i = 0; i < 4; i++)
             {
                 dest <<= 8;
-                dest += data[offset + (3 - i)];
+                if (isLE)
+                {
+                    dest += data[offset + (3 - i)];
+                }
+                else
+                {
+                    dest += data[offset + i];
+                }
             }
             return dest;
+        }
+        public static uint bytesToUint(byte[] data, uint offset)
+        {
+            return bytesToUint(data, offset, true);
         }
         public static uint bytesToUint24(byte[] data, uint offset)
         {
@@ -70,15 +81,26 @@ namespace SMBB
             }
             return dest;
         }
-        public static ushort bytesToUshort(byte[] data, uint offset)
+        public static ushort bytesToUshort(byte[] data, uint offset, bool isLE)
         {
             ushort dest = 0;
             for (int i = 0; i < 2; i++)
             {
                 dest <<= 8;
-                dest += data[offset + (1 - i)];
+                if (isLE)
+                {
+                    dest += data[offset + (1 - i)];
+                }
+                else
+                {
+                    dest += data[offset + i];
+                }
             }
             return dest;
+        }
+        public static ushort bytesToUshort(byte[] data, uint offset)
+        {
+            return bytesToUshort(data, offset, true);
         }
         public static string bytesToString(byte[] data, uint offset, uint length)
         {
@@ -119,6 +141,12 @@ namespace SMBB
                     data[offset + i] = (byte)val[(int)i];
                 }
             }
+        }
+        public static short clamp16(int val)
+        {
+            if (val > short.MaxValue) return short.MaxValue;
+            if (val < short.MinValue) return short.MinValue;
+            return (short)val;
         }
     }
     class Sound
@@ -533,6 +561,67 @@ namespace SMBB
                 return false;
             }
             return true;
+        }
+    }
+    class DspAdpcmInfo
+    {
+        public uint sampleLength;
+        public short[] coefs = new short[16];
+        public short predScale;
+        public short hist1;
+        public short hist2;
+        public DspAdpcmInfo(byte[] src)
+        {
+            for (uint i = 0; i < 16; i++) coefs[i] = (short)Utils.bytesToUshort(src, i * 2, false);
+            predScale = (short)Utils.bytesToUshort(src, 0x22, false);
+            hist1 = (short)Utils.bytesToUshort(src, 0x24, false);
+            hist2 = (short)Utils.bytesToUshort(src, 0x26, false);
+        }
+    }
+    class DspAdpcmDecoder
+    {
+        public const int SAMPLES_PER_FRAME = 14;
+        public static short[] decode(byte[] src, DspAdpcmInfo info)
+        {
+            uint samplesRemaining = info.sampleLength;
+            uint srcIndex = 0;
+            uint destIndex = 0;
+            short[] dest = new short[info.sampleLength];
+            short hist1 = info.hist1;
+            short hist2 = info.hist2;
+            uint frameCount = (info.sampleLength + SAMPLES_PER_FRAME - 1) / SAMPLES_PER_FRAME;
+            for (uint i = 0; i < frameCount; i++)
+            {
+                int predictor = src[srcIndex] >> 4;
+                int scale = 1 << (src[srcIndex] & 0xF);
+                srcIndex++;
+                short coef1 = info.coefs[predictor * 2];
+                short coef2 = info.coefs[predictor * 2 + 1];
+                uint samplesInFrame = SAMPLES_PER_FRAME;
+                if (samplesRemaining < SAMPLES_PER_FRAME) samplesInFrame = samplesRemaining;
+                for (uint j = 0; j < samplesInFrame; j++)
+                {
+                    int curSample;
+                    if (j % 2 == 0)
+                    {
+                        curSample = src[srcIndex] >> 4;
+                    }
+                    else
+                    {
+                        curSample = src[srcIndex] & 0xF;
+                        srcIndex++;
+                    }
+                    if (curSample >= 8) curSample -= 16;
+                    curSample = (((scale * curSample) << 11) + 1024 + (coef1 * hist1 + coef2 * hist2)) >> 11;
+                    short curRealSample = Utils.clamp16(curSample);
+                    hist2 = hist1;
+                    hist1 = curRealSample;
+                    dest[destIndex] = curRealSample;
+                    destIndex++;
+                }
+                samplesRemaining -= samplesInFrame;
+            }
+            return dest;
         }
     }
     /// <summary>
