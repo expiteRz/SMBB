@@ -1,7 +1,7 @@
 # Simple Multi Brstm Builder
 ![SnapShot](https://cdn.discordapp.com/attachments/866343429223088198/886936663379554344/SMBB-v0.4.png)
 
-WAV,MP3,AACファイルからマルチBRSTMを生成します。WAVファイルは無圧縮の8bit, 16bit, 24bit, 32bitのPCM音源のみ対応しています。チャンネル数はいくつでも大丈夫です。
+WAV,MP3,AAC,BRSTMファイルからマルチBRSTMを生成します。WAVファイルは無圧縮の8bit, 16bit, 24bit, 32bitのPCM音源のみ対応しています。チャンネル数はいくつでも大丈夫です。BRSTMファイルはPCM8には対応してないのでご注意ください。
 
 # 初期設定
 以下のファイルをtoolsフォルダーに入れてください。
@@ -26,7 +26,7 @@ WAV,MP3,AACファイルからマルチBRSTMを生成します。WAVファイル�
 ****
 
 # Simple Multi BRSTM Builder
-The application makes possible to create a BRSTM file from WAV, MP3 or AAC. It only supports uncompressed 8bits, 16bits, 24bits and 32bits for creating BRSTM using WAV. Also, the amount of channel is free.
+The application makes possible to create a BRSTM file from WAV, MP3, AAC or BRSTM. It only supports uncompressed 8bits, 16bits, 24bits and 32bits for creating BRSTM using WAV. Also, the amount of channel is free. The PCM8 formatted BRSTM is not supported.
 
 # Requirements
 Make sure ./tools folder contains following files:
