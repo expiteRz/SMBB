@@ -167,12 +167,15 @@ namespace SMBB
         public const ushort PCM_24 = 65534;
         public const ushort PCM_32 = 65533;
         public const ushort PCM_64 = 65532;
-        public const string BRSTM_RSTM_TAG = "RSTM";
-        public const string BRSTM_HEAD_TAG = "HEAD";
-        public const string BRSTM_DATA_TAG = "DATA";
-        public const byte BRSTM_PCM_8 = 0;
-        public const byte BRSTM_PCM_16 = 1;
-        public const byte BRSTM_DSP_ADPCM = 2;
+        public const string BSTM_RSTM_TAG = "RSTM";
+        public const string BSTM_CSTM_TAG = "CSTM";
+        public const string BSTM_HEAD_TAG = "HEAD";
+        public const string BSTM_INFO_TAG = "INFO";
+        public const string BSTM_DATA_TAG = "DATA";
+        public const byte BSTM_PCM_8 = 0;
+        public const byte BSTM_PCM_16 = 1;
+        public const byte BSTM_DSP_ADPCM = 2;
+        public const byte BSTM_IMA_ADPCM = 3;
         //public const ushort MS_ADPCM = 2;
         public const ushort PCM_FLOAT = 3;
         public const byte NO_ERROR = 0;
@@ -415,49 +418,124 @@ namespace SMBB
         }
         void readBrstmFromBytes(byte[] src)
         {
-            uint headOffset = Utils.bytesToUint(src, 0x10, false);
-            uint dataOffset = Utils.bytesToUint(src, 0x20, false);
-            uint dataSize = Utils.bytesToUint(src, 0x24, false);
-            if (Utils.bytesToString(src, 0, 4) != BRSTM_RSTM_TAG) return;
-            if (Utils.bytesToUshort(src, 4) != 0xFFFE) return;
-            if (Utils.bytesToString(src, headOffset, 4) != BRSTM_HEAD_TAG) return;
-            if (Utils.bytesToString(src, dataOffset, 4) != BRSTM_DATA_TAG) return;
-            uint head1Offset = headOffset + 8 + Utils.bytesToUint(src, headOffset + 0xC, false);
+            bool isLE;
+            bool isBcstm = false;
+            if (Utils.bytesToUshort(src, 4) == 0xFFFE)
+            {
+                isLE = false;
+            }
+            else if(Utils.bytesToUshort(src, 4) == 0xFEFF)
+            {
+                isLE = true;
+            }else{
+                return;
+            }
+            if (Utils.bytesToString(src, 0, 4) != BSTM_RSTM_TAG)
+            {
+                if (Utils.bytesToString(src, 0, 4) == BSTM_CSTM_TAG)
+                {
+                    isBcstm = true;
+                }
+                else
+                {
+                    return;
+                }
+            }
+            uint headOffset = 0;
+            uint dataOffset = 0;
+            uint dataSize = 0;
+            if (isBcstm)
+            {
+                uint chunkCount = Utils.bytesToUint(src, 0x10, isLE);
+                uint curChunk = 0x14;
+                if (chunkCount != 2 && chunkCount != 3) return;
+                for (uint i = 0; i < chunkCount; i++)
+                {
+                    ushort curChunkTag = Utils.bytesToUshort(src, curChunk, isLE);
+                    switch (curChunkTag)
+                    {
+                        case 0x4000:
+                            headOffset = Utils.bytesToUint(src, curChunk + 4, isLE);
+                            break;
+                        case 0x4001:
+                            break;
+                        case 0x4002:
+                            dataOffset = Utils.bytesToUint(src, curChunk + 4, isLE);
+                            dataSize = Utils.bytesToUint(src, curChunk + 8, isLE);
+                            break;
+                        default:
+                            return;
+                    }
+                    curChunk += 0xC;
+                }
+            }
+            else
+            {
+                headOffset = Utils.bytesToUint(src, 0x10, isLE);
+                dataOffset = Utils.bytesToUint(src, 0x20, isLE);
+                dataSize = Utils.bytesToUint(src, 0x24, isLE);
+            }
+            if (Utils.bytesToString(src, headOffset, 4) != BSTM_HEAD_TAG && Utils.bytesToString(src, headOffset, 4) != BSTM_INFO_TAG) return;
+            if (Utils.bytesToString(src, dataOffset, 4) != BSTM_DATA_TAG) return;
+            uint head1Offset = headOffset + 8 + Utils.bytesToUint(src, headOffset + 0xC, isLE);
             byte brstmFormat = src[head1Offset];
             channelCount = src[head1Offset + 2];
-            sampleRate = Utils.bytesToUshort(src, head1Offset + 4, false);
-            sampleLength = Utils.bytesToUint(src, head1Offset + 0xC, false);
+            sampleRate = Utils.bytesToUshort(src, head1Offset + 4, isLE);
+            sampleLength = Utils.bytesToUint(src, head1Offset + 0xC, isLE);
             if (src[head1Offset + 1] != 0)
             {
                 isLooped = true;
-                loopStart = Utils.bytesToUint(src, head1Offset + 8, false);
+                loopStart = Utils.bytesToUint(src, head1Offset + 8, isLE);
                 loopEnd = sampleLength - 1;
             }
-            uint blockCount = Utils.bytesToUint(src, head1Offset + 0x14, false);
-            uint blockSize = Utils.bytesToUint(src, head1Offset + 0x18, false);
-            uint lastBlockSize = Utils.bytesToUint(src, head1Offset + 0x20, false);
-            uint lastBlockSizeWithPad = Utils.bytesToUint(src, head1Offset + 0x28, false);
+            uint blockCount;
+            uint blockSize;
+            uint lastBlockSize;
+            uint lastBlockSizeWithPad;
+            if (isBcstm)
+            {
+                blockCount = Utils.bytesToUint(src, head1Offset + 0x10, isLE);
+                blockSize = Utils.bytesToUint(src, head1Offset + 0x14, isLE);
+                lastBlockSize = Utils.bytesToUint(src, head1Offset + 0x1C, isLE);
+                lastBlockSizeWithPad = Utils.bytesToUint(src, head1Offset + 0x24, isLE);
+            }
+            else
+            {
+                blockCount = Utils.bytesToUint(src, head1Offset + 0x14, isLE);
+                blockSize = Utils.bytesToUint(src, head1Offset + 0x18, isLE);
+                lastBlockSize = Utils.bytesToUint(src, head1Offset + 0x20, isLE);
+                lastBlockSizeWithPad = Utils.bytesToUint(src, head1Offset + 0x28, isLE);
+            }
             DspAdpcmInfo[] infos = new DspAdpcmInfo[channelCount];
-            uint head3Offset = headOffset + 8 + Utils.bytesToUint(src, headOffset + 0x1C, false);
-            if (brstmFormat == BRSTM_DSP_ADPCM)
+            uint head3Offset = headOffset + 8 + Utils.bytesToUint(src, headOffset + 0x1C, isLE);
+            if (brstmFormat == BSTM_DSP_ADPCM)
             {
                 for (uint i = 0; i < channelCount; i++)
                 {
-                    uint channelInfoOffset = headOffset + 8 + Utils.bytesToUint(src, head3Offset + 8 * (i + 1), false);
-                    channelInfoOffset = headOffset + 8 + Utils.bytesToUint(src, channelInfoOffset + 4, false);
-                    infos[i] = new DspAdpcmInfo(Utils.byteArrayCut(src, channelInfoOffset, 0x28));
+                    uint channelInfoOffset = 0;
+                    if (isBcstm)
+                    {
+                        channelInfoOffset = head3Offset + Utils.bytesToUint(src, head3Offset + 8 * (i + 1), isLE);
+                        channelInfoOffset = channelInfoOffset + Utils.bytesToUint(src, channelInfoOffset + 4, isLE);
+                    }
+                    else
+                    {
+                        channelInfoOffset = headOffset + 8 + Utils.bytesToUint(src, head3Offset + 8 * (i + 1), isLE);
+                        channelInfoOffset = headOffset + 8 + Utils.bytesToUint(src, channelInfoOffset + 4, isLE);
+                    }
+                    infos[i] = new DspAdpcmInfo(Utils.byteArrayCut(src, channelInfoOffset, 0x28), isLE);
                     infos[i].sampleLength = sampleLength;
                 }
             }
             switch (brstmFormat)
             {
-                case BRSTM_PCM_8:
+                case BSTM_PCM_8:
                     format = PCM_8;
                     return;
                     //break;
                     //現時点では対応しない
-                case BRSTM_PCM_16:
-                case BRSTM_DSP_ADPCM:
+                case BSTM_PCM_16:
+                case BSTM_DSP_ADPCM:
                     format = PCM_16;
                     break;
                 default:
@@ -465,19 +543,19 @@ namespace SMBB
 
             }
             data = new byte[channelCount * sampleLength * (getBps() / 8)];
-            uint dataPadding = Utils.bytesToUint(src, dataOffset + 8, false);
+            uint dataPadding = Utils.bytesToUint(src, dataOffset + 8, isLE);
             byte[][] spilitedData = spilitBrstmDataByChannel(Utils.byteArrayCut(src, dataOffset + 8 + dataPadding, dataSize - (dataPadding + 8)), blockCount, blockSize, lastBlockSize, lastBlockSizeWithPad, channelCount);
             for (uint i = 0; i < channelCount; i++)
             {
-                if (brstmFormat == BRSTM_DSP_ADPCM)
+                if (brstmFormat == BSTM_DSP_ADPCM)
                 {
                     short[] rawPcm16 = DspAdpcmDecoder.decode(spilitedData[i], infos[i]);
                     for (uint j = 0; j < sampleLength; j++) Utils.ushortToBytes(data, (channelCount * j + i) * 2, (ushort)rawPcm16[j]);
                 }
-                else if(brstmFormat == BRSTM_PCM_16)
+                else if(brstmFormat == BSTM_PCM_16)
                 {
                     for (uint j = 0; j < sampleLength; j++) {
-                        ushort tmpPcm16 = Utils.bytesToUshort(spilitedData[i], j * 2, false);
+                        ushort tmpPcm16 = Utils.bytesToUshort(spilitedData[i], j * 2, isLE);
                         Utils.ushortToBytes(data, (channelCount * j + i) * 2, tmpPcm16);
                     }
                 }
@@ -685,12 +763,12 @@ namespace SMBB
         public short predScale;
         public short hist1;
         public short hist2;
-        public DspAdpcmInfo(byte[] src)
+        public DspAdpcmInfo(byte[] src, bool isLE)
         {
-            for (uint i = 0; i < 16; i++) coefs[i] = (short)Utils.bytesToUshort(src, i * 2, false);
-            predScale = (short)Utils.bytesToUshort(src, 0x22, false);
-            hist1 = (short)Utils.bytesToUshort(src, 0x24, false);
-            hist2 = (short)Utils.bytesToUshort(src, 0x26, false);
+            for (uint i = 0; i < 16; i++) coefs[i] = (short)Utils.bytesToUshort(src, i * 2, isLE);
+            predScale = (short)Utils.bytesToUshort(src, 0x22, isLE);
+            hist1 = (short)Utils.bytesToUshort(src, 0x24, isLE);
+            hist2 = (short)Utils.bytesToUshort(src, 0x26, isLE);
         }
     }
     class DspAdpcmDecoder
@@ -861,7 +939,7 @@ namespace SMBB
         private void wavButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog();
-            dialog.Filter = "音声ファイル (*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac;*.brstm)|*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac;*.brstm|すべてのファイル(*.*)|*.*";
+            dialog.Filter = "音声ファイル (*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac;*.brstm;*.bcstm)|*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac;*.brstm;*.bcstm|すべてのファイル(*.*)|*.*";
             if(dialog.ShowDialog() == true)
             {
                 progress = DECODE_SOUND;
