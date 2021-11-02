@@ -169,6 +169,7 @@ namespace SMBB
         public const ushort PCM_64 = 65532;
         public const string BSTM_RSTM_TAG = "RSTM";
         public const string BSTM_CSTM_TAG = "CSTM";
+        public const string BSTM_FSTM_TAG = "FSTM";
         public const string BSTM_HEAD_TAG = "HEAD";
         public const string BSTM_INFO_TAG = "INFO";
         public const string BSTM_DATA_TAG = "DATA";
@@ -432,7 +433,7 @@ namespace SMBB
             }
             if (Utils.bytesToString(src, 0, 4) != BSTM_RSTM_TAG)
             {
-                if (Utils.bytesToString(src, 0, 4) == BSTM_CSTM_TAG)
+                if (Utils.bytesToString(src, 0, 4) == BSTM_CSTM_TAG || Utils.bytesToString(src, 0, 4) == BSTM_FSTM_TAG)
                 {
                     isBcstm = true;
                 }
@@ -446,7 +447,7 @@ namespace SMBB
             uint dataSize = 0;
             if (isBcstm)
             {
-                uint chunkCount = Utils.bytesToUint(src, 0x10, isLE);
+                uint chunkCount = Utils.bytesToUshort(src, 0x10, isLE);
                 uint curChunk = 0x14;
                 if (chunkCount != 2 && chunkCount != 3) return;
                 for (uint i = 0; i < chunkCount; i++)
@@ -945,7 +946,7 @@ namespace SMBB
         private void wavButton_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog();
-            dialog.Filter = "音声ファイル (*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac;*.brstm;*.bcstm)|*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac;*.brstm;*.bcstm|すべてのファイル(*.*)|*.*";
+            dialog.Filter = "音声ファイル (*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac;*.brstm;*.bcstm;*.bfstm)|*.wav;*.wave;*.mp3;*.mp4;*.m4a;*.aac;*.brstm;*.bcstm;*.bfstm|すべてのファイル(*.*)|*.*";
             if(dialog.ShowDialog() == true)
             {
                 progress = DECODE_SOUND;
