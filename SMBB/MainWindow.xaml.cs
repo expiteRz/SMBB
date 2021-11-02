@@ -480,7 +480,11 @@ namespace SMBB
             uint head1Offset = headOffset + 8 + Utils.bytesToUint(src, headOffset + 0xC, isLE);
             byte brstmFormat = src[head1Offset];
             channelCount = src[head1Offset + 2];
-            sampleRate = Utils.bytesToUshort(src, head1Offset + 4, isLE);
+            if(isBcstm){
+                sampleRate = Utils.bytesToUint(src, head1Offset + 4, isLE);
+            }else{
+                sampleRate = Utils.bytesToUshort(src, head1Offset + 4, isLE);
+            }
             sampleLength = Utils.bytesToUint(src, head1Offset + 0xC, isLE);
             if (src[head1Offset + 1] != 0)
             {
@@ -492,12 +496,14 @@ namespace SMBB
             uint blockSize;
             uint lastBlockSize;
             uint lastBlockSizeWithPad;
+            uint dataPadding;
             if (isBcstm)
             {
                 blockCount = Utils.bytesToUint(src, head1Offset + 0x10, isLE);
                 blockSize = Utils.bytesToUint(src, head1Offset + 0x14, isLE);
                 lastBlockSize = Utils.bytesToUint(src, head1Offset + 0x1C, isLE);
                 lastBlockSizeWithPad = Utils.bytesToUint(src, head1Offset + 0x24, isLE);
+                dataPadding = Utils.bytesToUint(src, head1Offset + 0x34, isLE);
             }
             else
             {
@@ -505,6 +511,7 @@ namespace SMBB
                 blockSize = Utils.bytesToUint(src, head1Offset + 0x18, isLE);
                 lastBlockSize = Utils.bytesToUint(src, head1Offset + 0x20, isLE);
                 lastBlockSizeWithPad = Utils.bytesToUint(src, head1Offset + 0x28, isLE);
+                dataPadding = Utils.bytesToUint(src, dataOffset + 8, isLE);
             }
             DspAdpcmInfo[] infos = new DspAdpcmInfo[channelCount];
             uint head3Offset = headOffset + 8 + Utils.bytesToUint(src, headOffset + 0x1C, isLE);
@@ -543,7 +550,6 @@ namespace SMBB
 
             }
             data = new byte[channelCount * sampleLength * (getBps() / 8)];
-            uint dataPadding = Utils.bytesToUint(src, dataOffset + 8, isLE);
             byte[][] spilitedData = spilitBrstmDataByChannel(Utils.byteArrayCut(src, dataOffset + 8 + dataPadding, dataSize - (dataPadding + 8)), blockCount, blockSize, lastBlockSize, lastBlockSizeWithPad, channelCount);
             for (uint i = 0; i < channelCount; i++)
             {
